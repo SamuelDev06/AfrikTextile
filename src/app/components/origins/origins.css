@@ -1,0 +1,32 @@
+.origins {
+  background: #fff3e1;
+  padding: 1.5rem clamp(1.5rem, 5vw, 4rem) 2rem;
+}
+
+.origins__intro {
+  border-left: 4px solid #f39808;
+  margin-bottom: 1.25rem;
+  padding-left: 0.9rem;
+}
+
+.origins__title {
+  color: #682b0b;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  margin: 0 0 0.2rem;
+}
+
+.origins__description {
+  color: #55220d;
+  margin: 0;
+}
+
+.origins__countries {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.7rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}

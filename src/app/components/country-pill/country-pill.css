@@ -1,0 +1,26 @@
+.country-pill {
+  align-items: center;
+  background: #fffaf2;
+  border: 1px solid #e8d2b9;
+  border-radius: 999px;
+  box-shadow: 0 2px 5px rgb(72 32 16 / 8%);
+  color: #55220d;
+  display: inline-flex;
+  gap: 0.55rem;
+  min-height: 2.7rem;
+  padding: 0.35rem 0.9rem;
+}
+
+.country-pill__placeholder {
+  background: #f9e3bf;
+  border-radius: 999px;
+  color: #85420d;
+  font-size: 0.72rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.country-pill__name {
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+}

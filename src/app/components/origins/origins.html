@@ -1,0 +1,19 @@
+<section class="origins" id="origines" aria-labelledby="origins-title">
+  <div class="origins__intro">
+    <h2 class="origins__title" id="origins-title">Nos origines</h2>
+    <p class="origins__description">
+      Explorez nos tissus par pays et découvrez leurs richesses culturelles.
+    </p>
+  </div>
+
+  <ul class="origins__countries">
+    @for (country of countries; track country.name) {
+      <li>
+        <app-country-pill
+          [name]="country.name"
+          [description]="country.description"
+        ></app-country-pill>
+      </li>
+    }
+  </ul>
+</section>
