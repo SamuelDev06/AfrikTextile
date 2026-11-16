@@ -1,4 +1,10 @@
-<span class="country-pill">
+<a
+  class="country-pill"
+  [class.country-pill--active]="active()"
+  href="#catalogue"
+  [attr.aria-current]="active() ? 'true' : null"
+  (click)="selected.emit(name())"
+>
   <span class="country-pill__placeholder">{{ description() }}</span>
   <span class="country-pill__name">{{ name() }}</span>
-</span>
+</a>

@@ -9,6 +9,19 @@
   gap: 0.55rem;
   min-height: 2.7rem;
   padding: 0.35rem 0.9rem;
+  text-decoration: none;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.country-pill:hover,
+.country-pill--active {
+  background: #fff0d6;
+  border-color: #e99410;
+}
+
+.country-pill:focus-visible {
+  outline: 3px solid #e99410;
+  outline-offset: 3px;
 }
 
 .country-pill__placeholder {

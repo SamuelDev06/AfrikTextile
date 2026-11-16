@@ -7,11 +7,21 @@
   </div>
 
   <ul class="origins__countries">
+    <li>
+      <app-country-pill
+        name="Tous"
+        description="Tous les pays"
+        [active]="selectedCountry() === null"
+        (selected)="countrySelected.emit(null)"
+      ></app-country-pill>
+    </li>
     @for (country of countries; track country.name) {
       <li>
         <app-country-pill
           [name]="country.name"
           [description]="country.description"
+          [active]="selectedCountry() === country.name"
+          (selected)="countrySelected.emit($event)"
         ></app-country-pill>
       </li>
     }

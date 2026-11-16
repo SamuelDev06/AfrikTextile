@@ -30,5 +30,12 @@
     <div class="hero__visual" aria-hidden="true"></div>
   </section>
 
-  <app-origins></app-origins>
+  <app-origins
+    [selectedCountry]="selectedCountry()"
+    (countrySelected)="selectCountry($event)"
+  ></app-origins>
+  <app-catalogue
+    [selectedCountry]="selectedCountry()"
+    (countrySelected)="selectCountry($event)"
+  ></app-catalogue>
 </main>

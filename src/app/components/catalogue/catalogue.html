@@ -1,0 +1,127 @@
+<section class="catalogue" id="catalogue" aria-labelledby="catalogue-title">
+  <div class="catalogue__heading">
+    <div class="catalogue__intro">
+      <h2 class="catalogue__title" id="catalogue-title">Catalogue</h2>
+      <p class="catalogue__description">Une sélection de tissus africains d’exception</p>
+    </div>
+
+    <div class="catalogue__filters">
+      <label class="catalogue__search">
+        <span aria-hidden="true">⌕</span>
+        <span class="visually-hidden">Rechercher un tissu</span>
+        <input
+          type="search"
+          placeholder="Rechercher un tissu..."
+          [value]="searchTerm()"
+          (input)="updateSearch($event)"
+        />
+      </label>
+
+      <label class="catalogue__country-filter">
+        <span class="visually-hidden">Filtrer par pays</span>
+        <select [value]="selectedCountry() ?? ''" (change)="updateCountry($event)">
+          <option value="">Tous les pays</option>
+          @for (country of countries; track country) {
+            <option [value]="country">{{ country }}</option>
+          }
+        </select>
+      </label>
+    </div>
+  </div>
+
+  <div class="catalogue__grid" aria-live="polite">
+    @for (textile of filteredTextiles(); track textile.name) {
+      <article class="textile-card">
+        <div
+          [class]="'textile-card__image textile-card__image--' + textile.pattern"
+          role="img"
+          [attr.aria-label]="'Motif provisoire pour ' + textile.name"
+        >
+          <span class="textile-card__country">{{ textile.country }}</span>
+        </div>
+        <div class="textile-card__content">
+          <h3 class="textile-card__name">{{ textile.name }}</h3>
+          <p class="textile-card__description">{{ textile.description }}</p>
+          <p class="textile-card__type">Type : {{ textile.type }}</p>
+          <div class="textile-card__actions">
+            <a class="textile-card__whatsapp" [href]="whatsappLink">
+              <svg
+                class="textile-card__action-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.5-4A8 8 0 1 1 20 11.5Z" />
+                <path d="M9 8.5c.4 2.5 2 4.1 4.5 4.7l1-1 2 1c-.2 1.2-1 1.8-2.2 1.8-3.7-.4-6.7-3.4-7.1-7.1 0-1.2.6-2 1.8-2.2l1 2-1 1Z" />
+              </svg>
+              Discuter sur WhatsApp
+            </a>
+            <button
+              class="textile-card__details"
+              type="button"
+              (click)="showDetails(textile, detailsDialog)"
+            >
+              <svg
+                class="textile-card__action-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
+                <circle cx="12" cy="12" r="2.5" />
+              </svg>
+              Voir détails
+            </button>
+          </div>
+        </div>
+      </article>
+    } @empty {
+      <p class="catalogue__empty">Aucun tissu ne correspond à cette recherche.</p>
+    }
+  </div>
+
+  <dialog
+    #detailsDialog
+    class="textile-dialog"
+    aria-labelledby="textile-details-title"
+    (close)="clearSelectedTextile()"
+  >
+    @if (selectedTextile(); as textile) {
+      <div class="textile-dialog__content">
+        <button
+          class="textile-dialog__close"
+          type="button"
+          aria-label="Fermer les détails"
+          (click)="closeDetails(detailsDialog)"
+        >
+          &times;
+        </button>
+        <div
+          [class]="'textile-card__image textile-card__image--' + textile.pattern + ' textile-dialog__image'"
+          role="img"
+          [attr.aria-label]="'Motif provisoire pour ' + textile.name"
+        ></div>
+        <h2 id="textile-details-title">{{ textile.name }}</h2>
+        <p>{{ textile.description }}</p>
+        <dl class="textile-dialog__info">
+          <div>
+            <dt>Pays d’origine</dt>
+            <dd>{{ textile.country }}</dd>
+          </div>
+          <div>
+            <dt>Type de tissu</dt>
+            <dd>{{ textile.type }}</dd>
+          </div>
+        </dl>
+      </div>
+    }
+  </dialog>
+</section>

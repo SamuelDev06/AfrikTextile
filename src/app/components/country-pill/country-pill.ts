@@ -1,4 +1,4 @@
-import { Component, input } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 
 @Component({
   selector: 'app-country-pill',
@@ -8,4 +8,6 @@ import { Component, input } from '@angular/core';
 export class CountryPill {
   readonly name = input.required<string>();
   readonly description = input.required<string>();
+  readonly active = input(false);
+  readonly selected = output<string>();
 }

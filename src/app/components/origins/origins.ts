@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, input, output } from '@angular/core';
 import { CountryPill } from '../country-pill/country-pill';
 
 interface Country {
@@ -13,7 +13,10 @@ interface Country {
   templateUrl: './origins.html',
 })
 export class Origins {
-  // stockages des  informations sur les pays 
+  readonly selectedCountry = input<string | null>(null);
+  readonly countrySelected = output<string | null>();
+
+  // Cette liste alimente les boutons de pays.
   protected readonly countries: Country[] = [
     { name: "Côte d'Ivoire", description: 'Drapeau ivoirien' },
     { name: 'Ghana', description: 'Drapeau ghanéen' },
