@@ -1,3 +1,83 @@
+<section class="selection" aria-labelledby="selection-title">
+  <div class="selection__heading">
+    <h2 class="selection__title" id="selection-title">Sélection du moment</h2>
+    <p>Les tissus les plus cliqués sur WhatsApp au cours des 30 derniers jours.</p>
+  </div>
+
+  <div class="selection__grid">
+    @if (featuredError()) {
+      <p class="selection__message" role="alert">{{ featuredError() }}</p>
+    } @else if (featuredLoading()) {
+      <p class="selection__message" role="status">Chargement de la sélection...</p>
+    } @else if (featuredTextiles().length === 0) {
+      <p class="selection__message">La sélection apparaîtra après les premiers clics.</p>
+    } @else {
+      @for (textile of featuredTextiles(); track textile.id) {
+      <article class="selection-card">
+        <div
+          [class]="'textile-card__image textile-card__image--' + textile.pattern"
+          role="img"
+          [attr.aria-label]="'Motif provisoire pour ' + textile.name"
+        >
+          <span class="textile-card__country">À découvrir</span>
+        </div>
+        <div class="selection-card__content">
+          <h3>{{ textile.name }}</h3>
+          <p>{{ textile.description }}</p>
+          <div class="selection-card__actions">
+            <button
+              class="textile-card__details"
+              type="button"
+              (click)="showDetails(textile, detailsDialog)"
+            >
+              <svg
+                class="textile-card__action-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" />
+                <circle cx="12" cy="12" r="2.5" />
+              </svg>
+              Voir détails
+            </button>
+            <a
+              class="textile-card__whatsapp"
+              [href]="whatsappLink"
+              (click)="recordWhatsappClick(textile)"
+            >
+              <svg
+                class="textile-card__action-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M20 11.5a8 8 0 0 1-11.8 7L4 20l1.5-4A8 8 0 1 1 20 11.5Z" />
+                <path d="M9 8.5c.4 2.5 2 4.1 4.5 4.7l1-1 2 1c-.2 1.2-1 1.8-2.2 1.8-3.7-.4-6.7-3.4-7.1-7.1 0-1.2.6-2 1.8-2.2l1 2-1 1Z" />
+              </svg>
+              Discuter sur WhatsApp
+            </a>
+          </div>
+        </div>
+      </article>
+      }
+    }
+  </div>
+  @if (clickTrackingError()) {
+    <p class="selection__tracking-error" role="alert">
+      Le clic n’a pas pu être comptabilisé. Tu peux tout de même continuer vers WhatsApp.
+    </p>
+  }
+</section>
+
 <section class="catalogue" id="catalogue" aria-labelledby="catalogue-title">
   <div class="catalogue__heading">
     <div class="catalogue__intro">
@@ -44,7 +124,11 @@
           <p class="textile-card__description">{{ textile.description }}</p>
           <p class="textile-card__type">Type : {{ textile.type }}</p>
           <div class="textile-card__actions">
-            <a class="textile-card__whatsapp" [href]="whatsappLink">
+            <a
+              class="textile-card__whatsapp"
+              [href]="whatsappLink"
+              (click)="recordWhatsappClick(textile)"
+            >
               <svg
                 class="textile-card__action-icon"
                 viewBox="0 0 24 24"

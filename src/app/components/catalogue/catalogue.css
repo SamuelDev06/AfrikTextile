@@ -1,3 +1,79 @@
+.selection {
+  background: #fff3e1;
+  padding: 1.5rem clamp(1.5rem, 5vw, 4rem) 2rem;
+}
+
+.selection__heading {
+  border-left: 4px solid #f39808;
+  margin-bottom: 1.25rem;
+  padding-left: 0.9rem;
+}
+
+.selection__title {
+  color: #682b0b;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.6rem, 3vw, 2rem);
+  margin: 0 0 0.2rem;
+}
+
+.selection__heading p {
+  color: #55220d;
+  margin: 0;
+}
+
+.selection__grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.selection__message {
+  color: #71300e;
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 1rem 0;
+  text-align: center;
+}
+
+.selection__tracking-error {
+  color: #9c2c18;
+  font-size: 0.9rem;
+  margin: 0.75rem 0 0;
+  text-align: center;
+}
+
+.selection-card {
+  background: #fffaf2;
+  border: 1px solid #f0dfc9;
+  border-radius: 0.85rem;
+  box-shadow: 0 3px 10px rgb(72 32 16 / 8%);
+  min-width: 0;
+  overflow: hidden;
+}
+
+.selection-card__content {
+  padding: 0.85rem 1rem 1rem;
+}
+
+.selection-card__content h3 {
+  color: #55220d;
+  font-size: 1rem;
+  margin: 0 0 0.25rem;
+}
+
+.selection-card__content p {
+  color: #71300e;
+  font-size: 0.88rem;
+  margin: 0;
+}
+
+.selection-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.9rem;
+}
+
 .catalogue {
   background: #fffaf2;
   padding: 1.5rem clamp(1.5rem, 5vw, 4rem) 2rem;
@@ -311,6 +387,10 @@
 }
 
 @media (max-width: 900px) {
+  .selection__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .catalogue__grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -327,6 +407,10 @@
   }
 
   .catalogue__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .selection__grid {
     grid-template-columns: 1fr;
   }
 }

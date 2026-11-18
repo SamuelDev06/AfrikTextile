@@ -1,10 +1,20 @@
 import { TestBed } from '@angular/core/testing';
 import { App } from './app';
+import { TextileClicksService } from './components/catalogue/textile-clicks.service';
 
 describe('App', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [App],
+      providers: [
+        {
+          provide: TextileClicksService,
+          useValue: {
+            getTopTextileIds: async () => [],
+            recordClick: async () => undefined,
+          },
+        },
+      ],
     })
       .compileComponents();
   });

@@ -1,8 +1,10 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import { Component, computed, input, OnInit, output, signal } from '@angular/core';
+import { TextileClicksService } from './textile-clicks.service';
 
 type TextilePattern = 'wax' | 'bazin' | 'bogolan' | 'kente';
 
 interface Textile {
+  id: string;
   name: string;
   country: string;
   type: string;
@@ -15,17 +17,24 @@ interface Textile {
   templateUrl: './catalogue.html',
   styleUrl: './catalogue.css',
 })
-export class Catalogue {
+export class Catalogue implements OnInit {
+  constructor(private readonly textileClicks: TextileClicksService) {}
+
   readonly selectedCountry = input<string | null>(null);
   readonly countrySelected = output<string | null>();
   protected readonly searchTerm = signal('');
   protected readonly selectedTextile = signal<Textile | null>(null);
+  protected readonly featuredTextiles = signal<Textile[]>([]);
+  protected readonly featuredLoading = signal(true);
+  protected readonly featuredError = signal<string | null>(null);
+  protected readonly clickTrackingError = signal(false);
   // Ce lien provisoire sera remplacé par le lien WhatsApp définitif.
   protected readonly whatsappLink = '#contacts';
 
   // Ces tissus alimentent les cartes et les filtres du catalogue.
   protected readonly textiles: Textile[] = [
     {
+      id: 'wax-royal',
       name: 'Wax Royal',
       country: "Côte d'Ivoire",
       type: 'Wax',
@@ -33,6 +42,7 @@ export class Catalogue {
       pattern: 'wax',
     },
     {
+      id: 'bazin-prestige',
       name: 'Bazin Prestige',
       country: 'Sénégal',
       type: 'Bazin',
@@ -40,6 +50,7 @@ export class Catalogue {
       pattern: 'bazin',
     },
     {
+      id: 'bogolan-moderne',
       name: 'Bogolan Moderne',
       country: 'Mali',
       type: 'Bogolan',
@@ -47,6 +58,7 @@ export class Catalogue {
       pattern: 'bogolan',
     },
     {
+      id: 'kente-traditionnel',
       name: 'Kente Traditionnel',
       country: 'Ghana',
       type: 'Kente',
@@ -63,6 +75,10 @@ export class Catalogue {
     'Sénégal',
     'Togo',
   ];
+
+  ngOnInit(): void {
+    void this.loadFeaturedTextiles();
+  }
 
   // Le pays choisi et la recherche déterminent les tissus affichés.
   protected readonly filteredTextiles = computed(() => {
@@ -88,6 +104,37 @@ export class Catalogue {
   protected updateCountry(event: Event): void {
     const country = (event.target as HTMLSelectElement).value;
     this.countrySelected.emit(country || null);
+  }
+
+  // Enregistre le clic et recharge le classement des 30 derniers jours.
+  protected async recordWhatsappClick(textile: Textile): Promise<void> {
+    try {
+      await this.textileClicks.recordClick(textile.id);
+      this.clickTrackingError.set(false);
+      await this.loadFeaturedTextiles();
+    } catch (error) {
+      console.error('Impossible d’enregistrer le clic WhatsApp.', error);
+      this.clickTrackingError.set(true);
+    }
+  }
+
+  private async loadFeaturedTextiles(): Promise<void> {
+    this.featuredLoading.set(true);
+    this.featuredError.set(null);
+
+    try {
+      const topIds = await this.textileClicks.getTopTextileIds();
+      this.featuredTextiles.set(
+        topIds
+          .map((id) => this.textiles.find((textile) => textile.id === id))
+          .filter((textile): textile is Textile => textile !== undefined),
+      );
+    } catch (error) {
+      console.error('Impossible de charger la sélection du moment.', error);
+      this.featuredError.set('La sélection du moment est temporairement indisponible.');
+    } finally {
+      this.featuredLoading.set(false);
+    }
   }
 
   protected showDetails(textile: Textile, dialog: HTMLDialogElement): void {
