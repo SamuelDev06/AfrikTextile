@@ -1,0 +1,110 @@
+.contacts {
+  background:
+    radial-gradient(circle at 8% 15%, rgb(243 152 8 / 12%) 0 2px, transparent 3px),
+    #fff3e1;
+  padding: clamp(2.5rem, 6vw, 4rem) 1.5rem;
+  text-align: center;
+}
+
+.contacts__content {
+  margin: 0 auto;
+  max-width: 38rem;
+}
+
+.contacts__title {
+  color: #682b0b;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.7rem, 4vw, 2.4rem);
+  margin: 0 0 1.25rem;
+}
+
+.contacts__logo {
+  display: block;
+  height: auto;
+  margin: 0 auto;
+  max-width: 11rem;
+  width: 100%;
+}
+
+.contacts__invitation {
+  color: #71300e;
+  margin: 0;
+}
+
+.contacts__socials {
+  align-items: center;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  list-style: none;
+  margin: 1.35rem 0 0;
+  padding: 0;
+}
+
+.contacts__social-icon {
+  align-items: center;
+  background: #71300e;
+  border-radius: 50%;
+  color: #fff3e1;
+  display: inline-flex;
+  height: 2.75rem;
+  justify-content: center;
+  width: 2.75rem;
+}
+
+.contacts a.contacts__social-icon {
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.contacts a.contacts__social-icon:focus-visible {
+  outline: 3px solid #e99410;
+  outline-offset: 3px;
+}
+
+.contacts__social-icon svg {
+  fill: currentColor;
+  height: 1.35rem;
+  width: 1.35rem;
+}
+
+.contacts__social-icon svg[fill='none'] {
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.8;
+}
+
+.contacts__social-icon .contacts__social-dot {
+  fill: #71300e;
+}
+
+.contacts__social-icon--tiktok .contacts__tiktok-shadow--cyan {
+  fill: #25f4ee;
+}
+
+.contacts__social-icon--tiktok .contacts__tiktok-shadow--red {
+  fill: #fe2c55;
+}
+
+.contacts__social-icon--tiktok .contacts__tiktok-note {
+  fill: currentColor;
+}
+
+.contacts__social-icon--whatsapp .contacts__whatsapp-handset {
+  fill: currentColor;
+  stroke: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .contacts__social-icon {
+    transition: background-color 160ms ease, transform 160ms ease;
+  }
+
+  .contacts__social-icon:hover {
+    background: #f39808;
+    color: #55220d;
+    transform: translateY(-2px);
+  }
+}

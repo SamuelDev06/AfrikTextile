@@ -31,6 +31,16 @@ describe('App', () => {
     expect(compiled.querySelector('h1')?.textContent).toContain('Afrik Textile');
   });
 
+  it('should display the brand slogan in the hero', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.querySelector('.hero__tagline')?.textContent).toContain(
+      'L’authenticité africaine, notre fierté.',
+    );
+  });
+
   it('should display the values banner', async () => {
     const fixture = TestBed.createComponent(App);
     await fixture.whenStable();
@@ -38,5 +48,14 @@ describe('App', () => {
 
     expect(compiled.querySelector('.engagements__title')?.textContent).toContain('Nos valeurs');
     expect(compiled.querySelectorAll('.engagements__item').length).toBe(3);
+  });
+
+  it('should display the contacts section and its social icons', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.querySelector('#contacts .contacts__logo')).toBeTruthy();
+    expect(compiled.querySelectorAll('.contacts__social-icon').length).toBe(4);
   });
 });
