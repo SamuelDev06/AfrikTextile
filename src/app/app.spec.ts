@@ -58,4 +58,17 @@ describe('App', () => {
     expect(compiled.querySelector('#contacts .contacts__logo')).toBeTruthy();
     expect(compiled.querySelectorAll('.contacts__social-icon').length).toBe(4);
   });
+
+  it('should display the footer fabric strip and creator credit', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.querySelector('.site-footer__fabric')).toBeTruthy();
+    expect(compiled.querySelector('.site-footer__copyright')?.textContent).toContain(
+      'Afrik Textile. Tous droits réservés.',
+    );
+    expect(compiled.querySelector('.site-footer__author')?.textContent).toContain('Dev713');
+    expect(compiled.querySelector('.site-footer__swirl')?.textContent).toContain('🌀');
+  });
 });

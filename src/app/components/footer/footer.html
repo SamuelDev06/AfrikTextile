@@ -1,0 +1,30 @@
+<footer class="site-footer">
+  <div class="site-footer__fabric" aria-hidden="true"></div>
+
+  <div class="site-footer__credits">
+    <p class="site-footer__copyright">
+      © {{ currentYear }} Afrik Textile. Tous droits réservés.
+    </p>
+    <p class="site-footer__author">
+      Conçu par
+      @if (portfolioUrl) {
+        <a
+          class="site-footer__portfolio"
+          [href]="portfolioUrl"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <span>S.</span>
+          <span class="site-footer__swirl" aria-hidden="true">🌀</span>
+          <span>Dev713</span>
+        </a>
+      } @else {
+        <span class="site-footer__portfolio">
+          <span>S.</span>
+          <span class="site-footer__swirl" aria-hidden="true">🌀</span>
+          <span>Dev713</span>
+        </span>
+      }
+    </p>
+  </div>
+</footer>
