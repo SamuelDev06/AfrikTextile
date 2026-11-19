@@ -7,6 +7,5 @@ import { Component } from '@angular/core';
 })
 export class Footer {
   protected readonly currentYear = new Date().getFullYear();
-  // À renseigner lorsque le lien du portfolio sera prêt.
-  protected readonly portfolioUrl: string | null = null;
+  protected readonly portfolioUrl = 'https://mon-premier-portfolio.vercel.app/';
 }

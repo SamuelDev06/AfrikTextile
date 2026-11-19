@@ -1,16 +1,46 @@
+@if (isLoading()) {
+  <div class="page-loader" role="status" aria-live="polite" (animationend)="finishLoading($event)">
+    <div class="page-loader__spinner" aria-hidden="true"></div>
+    <p>Chargement de votre visite...</p>
+  </div>
+}
+
 <header class="site-header">
   <a class="brand" href="#accueil" aria-label="Afrik Textile, accueil">
     <img src="/img/AfrikTextile.jpg" alt="" />
-    <span>Afrik Textile</span>
+    <span class="brand__text">
+      <span class="brand__name">Afrik Textile</span>
+      <span class="brand__slogan">L’authenticité africaine, notre fierté.</span>
+    </span>
   </a>
 
-  <nav aria-label="Navigation principale">
+  <button
+    class="menu-toggle"
+    [class.menu-toggle--open]="isMenuOpen()"
+    type="button"
+    [attr.aria-expanded]="isMenuOpen()"
+    aria-controls="main-navigation"
+    [attr.aria-label]="isMenuOpen() ? 'Fermer le menu' : 'Ouvrir le menu'"
+    (click)="toggleMenu()"
+  >
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+  </button>
+
+  <nav
+    class="site-navigation"
+    id="main-navigation"
+    [class.site-navigation--open]="isMenuOpen()"
+    aria-label="Navigation principale"
+  >
     <ul class="nav-list">
-      <li><a class="nav-link nav-link--active" href="#accueil" aria-current="page">Accueil</a></li>
-      <li><a class="nav-link" href="#origines">Nos origines</a></li>
-      <li><a class="nav-link" href="#catalogue">Catalogue</a></li>
-      <li><a class="nav-link" href="#contacts">Contacts</a></li>
+      <li><a class="nav-link nav-link--active" href="#accueil" aria-current="page" (click)="closeMenu()">Accueil</a></li>
+      <li><a class="nav-link" href="#origines" (click)="closeMenu()">Nos origines</a></li>
+      <li><a class="nav-link" href="#catalogue" (click)="closeMenu()">Catalogue</a></li>
+      <li><a class="nav-link" href="#contacts" (click)="closeMenu()">Contacts</a></li>
     </ul>
+    <p class="site-navigation__slogan">L’authenticité africaine, notre fierté.</p>
   </nav>
 </header>
 
@@ -27,7 +57,7 @@
         Découvrir notre collection <span aria-hidden="true">→</span>
       </a>
     </div>
-    <div class="hero__visual" aria-hidden="true"></div>
+    <app-hero-carousel class="hero__visual"></app-hero-carousel>
   </section>
 
   <app-origins
@@ -41,4 +71,17 @@
   <app-engagements></app-engagements>
   <app-contacts></app-contacts>
 </main>
-<app-footer></app-footer>
+<app-footer id="page-footer"></app-footer>
+
+@if (showBackToTop()) {
+  <button
+    class="back-to-top"
+    type="button"
+    aria-label="Revenir en haut de page"
+    (click)="scrollToTop()"
+  >
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+      <path d="m6 14 6-6 6 6" />
+    </svg>
+  </button>
+}

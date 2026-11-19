@@ -1,0 +1,124 @@
+:host {
+  display: block;
+  min-height: 20rem;
+}
+
+.hero-carousel {
+  background: #482010;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+  height: 100%;
+  isolation: isolate;
+  min-height: 20rem;
+  overflow: hidden;
+  position: relative;
+}
+
+.hero-carousel__slide {
+  animation: hero-carousel-arrive 550ms ease-out both;
+  inset: 0;
+  position: absolute;
+}
+
+.hero-carousel__image,
+.hero-carousel__pattern {
+  height: 100%;
+  inset: 0;
+  position: absolute;
+  width: 100%;
+}
+
+.hero-carousel__image {
+  object-fit: cover;
+}
+
+.hero-carousel__pattern--wax {
+  background:
+    repeating-linear-gradient(45deg, transparent 0 15px, #f8a311 16px 21px, transparent 22px 32px),
+    repeating-linear-gradient(-45deg, #123f75 0 20px, #f3cb52 21px 26px, #a73d0d 27px 38px);
+}
+
+.hero-carousel__pattern--bazin {
+  background:
+    radial-gradient(circle at 30% 35%, #f7c651 0 9%, transparent 9.5%),
+    radial-gradient(circle at 68% 63%, #e77820 0 12%, transparent 12.5%),
+    repeating-linear-gradient(35deg, #642112 0 17px, #d96f1c 18px 22px, #34170e 23px 34px);
+}
+
+.hero-carousel__pattern--bogolan {
+  background:
+    repeating-linear-gradient(0deg, transparent 0 15px, #dca642 16px 20px, transparent 21px 30px),
+    repeating-linear-gradient(90deg, #172f36 0 18px, #f0e2b9 19px 24px, #315c66 25px 36px);
+}
+
+.hero-carousel__slide::after {
+  background: linear-gradient(0deg, rgb(35 18 10 / 65%), transparent 48%);
+  content: '';
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+}
+
+.hero-carousel__caption {
+  bottom: 1.2rem;
+  color: #fffaf2;
+  font-family: var(--font-family-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  left: 1.25rem;
+  margin: 0;
+  position: absolute;
+  right: 5.5rem;
+  z-index: 1;
+}
+
+.hero-carousel__indicators {
+  bottom: 1.45rem;
+  display: flex;
+  gap: 0.45rem;
+  left: 50%;
+  position: absolute;
+  transform: translateX(-50%);
+  z-index: 2;
+}
+
+.hero-carousel__indicator {
+  background: rgb(255 250 242 / 62%);
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+  height: 0.5rem;
+  padding: 0;
+  transition: background-color 180ms ease, width 180ms ease;
+  width: 0.5rem;
+}
+
+.hero-carousel__indicator--active {
+  background: #f39808;
+  width: 1.35rem;
+}
+
+.hero-carousel__indicator:focus-visible {
+  outline: 3px solid #e99410;
+  outline-offset: 3px;
+}
+
+@keyframes hero-carousel-arrive {
+  from {
+    opacity: 0;
+    transform: scale(1.025);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@media (max-width: 700px) {
+  :host,
+  .hero-carousel {
+    min-height: 15rem;
+  }
+}

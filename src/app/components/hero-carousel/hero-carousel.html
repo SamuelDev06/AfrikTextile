@@ -1,0 +1,45 @@
+<section
+  class="hero-carousel"
+  role="region"
+  aria-roledescription="carrousel"
+  aria-label="Tissus africains"
+  (pointerenter)="pauseAutoplay()"
+  (pointerleave)="resumeAutoplay()"
+  (focusin)="pauseAutoplay()"
+  (focusout)="onFocusOut($event)"
+>
+  @for (slide of slides; track slide.id; let index = $index) {
+    @if (activeSlide() === index) {
+      <div
+        class="hero-carousel__slide"
+        role="group"
+        aria-roledescription="diapositive"
+        [attr.aria-label]="(index + 1) + ' sur ' + slides.length + ' : ' + slide.title"
+      >
+        @if (slide.image) {
+          <img class="hero-carousel__image" [src]="slide.image" [alt]="slide.description" />
+        } @else {
+          <div
+            [class]="'hero-carousel__pattern hero-carousel__pattern--' + slide.pattern"
+            role="img"
+            [attr.aria-label]="slide.description"
+          ></div>
+        }
+        <p class="hero-carousel__caption">{{ slide.title }}</p>
+      </div>
+    }
+  }
+
+  <div class="hero-carousel__indicators" role="group" aria-label="Choisir un visuel">
+    @for (slide of slides; track slide.id; let index = $index) {
+      <button
+        class="hero-carousel__indicator"
+        [class.hero-carousel__indicator--active]="activeSlide() === index"
+        type="button"
+        [attr.aria-label]="'Afficher ' + slide.title"
+        [attr.aria-current]="activeSlide() === index ? 'true' : null"
+        (click)="selectSlide(index)"
+      ></button>
+    }
+  </div>
+</section>

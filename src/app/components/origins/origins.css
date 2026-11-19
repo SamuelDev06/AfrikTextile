@@ -11,7 +11,7 @@
 
 .origins__title {
   color: #682b0b;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--font-family-display);
   font-size: clamp(1.6rem, 3vw, 2rem);
   margin: 0 0 0.2rem;
 }

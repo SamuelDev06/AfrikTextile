@@ -13,7 +13,7 @@
 
 .contacts__title {
   color: #682b0b;
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--font-family-display);
   font-size: clamp(1.7rem, 4vw, 2.4rem);
   margin: 0 0 1.25rem;
 }

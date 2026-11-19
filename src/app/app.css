@@ -11,6 +11,8 @@
   display: flex;
   justify-content: space-between;
   padding: 0.75rem clamp(1.25rem, 6vw, 5rem);
+  position: relative;
+  z-index: 10;
 }
 
 .brand {
@@ -22,6 +24,23 @@
   gap: 0.65rem;
   text-decoration: none;
   white-space: nowrap;
+}
+
+.brand__text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.brand__name {
+  font-family: var(--font-family-display);
+}
+
+.brand__slogan {
+  color: #875b3e;
+  font-size: 0.62rem;
+  font-weight: 500;
+  line-height: 1.2;
 }
 
 .brand img {
@@ -40,6 +59,10 @@
   list-style: none;
   margin: 0;
   padding: 0;
+}
+
+.menu-toggle {
+  display: none;
 }
 
 .nav-link {
@@ -65,20 +88,33 @@
 
 .hero {
   align-items: center;
-  background: linear-gradient(110deg, #71300e 0%, #a95419 48%, #f5bb64 100%);
+  background: #482010;
   color: #fffaf2;
-  display: grid;
-  grid-template-columns: minmax(0, 0.9fr) minmax(18rem, 1.1fr);
   min-height: min(34rem, calc(100vh - 5rem));
   overflow: hidden;
   padding: 3rem clamp(1.5rem, 6.2vw, 6rem);
   position: relative;
 }
 
+.hero::before {
+  background: linear-gradient(
+    110deg,
+    rgb(103 47 17 / 25%),
+    rgb(156 76 25 / 16%) 58%,
+    rgb(231 151 54 / 12%)
+  );
+  content: '';
+  inset: 0;
+  pointer-events: none;
+  position: absolute;
+  z-index: 3;
+}
+
 .hero__content {
+  animation: rise-in 650ms ease-out both;
   max-width: 38rem;
   position: relative;
-  z-index: 1;
+  z-index: 4;
 }
 
 .hero__eyebrow {
@@ -91,7 +127,7 @@
 }
 
 .hero h1 {
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: var(--font-family-display);
   font-size: clamp(3.2rem, 7vw, 5.8rem);
   line-height: 0.98;
   margin: 0 0 1.1rem;
@@ -131,46 +167,225 @@
   transform: translateY(-2px);
 }
 
-.hero__visual {
-  align-self: stretch;
-  background:
-    radial-gradient(ellipse at 70% 45%, #ffcf6e 0 8%, transparent 8.5%),
-    radial-gradient(ellipse at 67% 49%, #173d36 0 15%, transparent 15.5%),
-    radial-gradient(ellipse at 57% 55%, #e88713 0 30%, transparent 30.5%),
-    radial-gradient(ellipse at 72% 54%, #482010 0 48%, transparent 48.5%);
-  min-height: 20rem;
-  opacity: 0.9;
+app-hero-carousel {
+  inset: 0;
+  min-height: 0;
+  position: absolute;
+  z-index: 2;
+}
+
+.page-loader {
+  align-items: center;
+  animation: page-loader-dismiss 350ms 650ms ease-in forwards;
+  background: #fffaf2;
+  color: #682b0b;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  inset: 0;
+  justify-content: center;
+  position: fixed;
+  z-index: 1000;
+}
+
+.page-loader p {
+  font-family: var(--font-family-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.page-loader__spinner {
+  animation: page-loader-spin 900ms linear infinite;
+  border: 8px solid #f4dfbf;
+  border-radius: 50%;
+  border-top-color: #f39808;
+  border-right-color: #71300e;
+  height: 7rem;
+  width: 7rem;
+}
+
+.back-to-top {
+  align-items: center;
+  background: #f39808;
+  border: 2px solid #fffaf2;
+  border-radius: 50%;
+  bottom: 1.5rem;
+  box-shadow: 0 4px 14px rgb(72 32 16 / 25%);
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  height: 3.25rem;
+  justify-content: center;
+  position: fixed;
+  right: 1.5rem;
+  transition: background-color 160ms ease, transform 160ms ease;
+  width: 3.25rem;
+  z-index: 20;
+}
+
+.back-to-top:hover {
+  background: #db7900;
+  transform: translateY(-3px);
+}
+
+.back-to-top:focus-visible {
+  outline: 3px solid #682b0b;
+  outline-offset: 3px;
+}
+
+.back-to-top svg {
+  height: 1.5rem;
+  width: 1.5rem;
 }
 
 @media (max-width: 700px) {
   .site-header {
-    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.65rem 1rem;
+  }
+
+  .brand img {
+    height: 2.5rem;
+    width: 2.5rem;
+  }
+
+  .brand {
+    white-space: normal;
+  }
+
+  .brand__text {
+    max-width: 12.5rem;
+  }
+
+  .brand__slogan {
+    font-size: 0.58rem;
+  }
+
+  .menu-toggle {
+    align-items: center;
+    background: transparent;
+    border: 1px solid #e8d2b9;
+    border-radius: 0.55rem;
+    color: #682b0b;
+    cursor: pointer;
+    display: flex;
     flex-direction: column;
-    gap: 0.8rem;
+    gap: 5px;
+    height: 2.75rem;
+    justify-content: center;
+    padding: 0.55rem;
+    width: 2.75rem;
+  }
+
+  .menu-toggle:focus-visible {
+    outline: 3px solid #e99410;
+    outline-offset: 3px;
+  }
+
+  .menu-toggle span {
+    background: currentColor;
+    border-radius: 2px;
+    height: 2px;
+    transition: opacity 180ms ease, transform 180ms ease;
+    width: 1.25rem;
+  }
+
+  .menu-toggle--open span:first-child {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .menu-toggle--open span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .menu-toggle--open span:last-child {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  .site-navigation {
+    background: #fffaf2;
+    border-bottom: 1px solid #f0dfc9;
+    box-shadow: 0 0.75rem 1.25rem rgb(72 32 16 / 12%);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1rem 1rem;
+    position: absolute;
+    right: 0;
+    top: 100%;
+  }
+
+  .site-navigation--open {
+    animation: menu-reveal 220ms ease-out both;
+    display: block;
+  }
+
+  .site-navigation__slogan {
+    border-top: 1px solid #f0dfc9;
+    color: #875b3e;
+    display: block;
+    font-family: var(--font-family-site);
+    font-size: 0.9rem;
+    font-style: italic;
+    margin: 0.5rem 0 0;
+    padding: 1rem 0.5rem 0.25rem;
+    text-align: center;
   }
 
   .nav-list {
-    flex-wrap: wrap;
-    gap: 0.65rem 1.25rem;
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .nav-link {
+    display: block;
+    padding: 0.7rem 0.5rem;
   }
 
   .hero {
-    grid-template-columns: 1fr;
-    min-height: auto;
-    padding-bottom: 0;
+    min-height: min(38rem, calc(100svh - 4rem));
+    padding-bottom: 3.5rem;
     padding-top: 3.5rem;
   }
 
-  .hero__visual {
-    min-height: 15rem;
+  .back-to-top {
+    bottom: 1rem;
+    right: 1rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    scroll-behavior: auto !important;
-    transition-duration: 0.01ms !important;
+  .page-loader {
+    animation-delay: 0ms !important;
+  }
+
+  .page-loader__spinner {
+    animation: none !important;
+  }
+}
+
+@keyframes menu-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-0.4rem);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes page-loader-spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+@keyframes page-loader-dismiss {
+  to {
+    opacity: 0;
+    visibility: hidden;
   }
 }

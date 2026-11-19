@@ -105,6 +105,19 @@ export class Catalogue {
     this.countrySelected.emit(country || null);
   }
 
+  protected moveCarousel(track: HTMLElement, direction: -1 | 1): void {
+    const firstCard = track.firstElementChild;
+    if (!(firstCard instanceof HTMLElement)) {
+      return;
+    }
+
+    const gap = Number.parseFloat(window.getComputedStyle(track).columnGap) || 0;
+    track.scrollBy({
+      left: direction * (firstCard.getBoundingClientRect().width + gap),
+      behavior: 'auto',
+    });
+  }
+
   // Enregistre le clic avant d’ouvrir WhatsApp.
   protected async openWhatsapp(event: MouseEvent, textile: Textile): Promise<void> {
     const href = (event.currentTarget as HTMLAnchorElement).href;
