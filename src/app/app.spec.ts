@@ -1,6 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { App } from './app';
-import { TextileClicksService } from './components/catalogue/textile-clicks.service';
+import { TextileAnalyticsService } from './components/catalogue/textile-analytics.service';
 
 describe('App', () => {
   beforeEach(async () => {
@@ -8,10 +8,9 @@ describe('App', () => {
       imports: [App],
       providers: [
         {
-          provide: TextileClicksService,
+          provide: TextileAnalyticsService,
           useValue: {
-            getTopTextileIds: async () => [],
-            recordClick: async () => undefined,
+            recordWhatsappClick: async () => undefined,
           },
         },
       ],
@@ -30,5 +29,14 @@ describe('App', () => {
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('h1')?.textContent).toContain('Afrik Textile');
+  });
+
+  it('should display the values banner', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.querySelector('.engagements__title')?.textContent).toContain('Nos valeurs');
+    expect(compiled.querySelectorAll('.engagements__item').length).toBe(3);
   });
 });

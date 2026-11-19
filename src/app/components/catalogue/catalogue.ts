@@ -1,5 +1,5 @@
-import { Component, computed, input, OnInit, output, signal } from '@angular/core';
-import { TextileClicksService } from './textile-clicks.service';
+import { Component, computed, input, output, signal } from '@angular/core';
+import { TextileAnalyticsService } from './textile-analytics.service';
 
 type TextilePattern = 'wax' | 'bazin' | 'bogolan' | 'kente';
 
@@ -10,6 +10,7 @@ interface Textile {
   type: string;
   description: string;
   pattern: TextilePattern;
+  featured: boolean;
 }
 
 @Component({
@@ -17,19 +18,14 @@ interface Textile {
   templateUrl: './catalogue.html',
   styleUrl: './catalogue.css',
 })
-export class Catalogue implements OnInit {
-  constructor(private readonly textileClicks: TextileClicksService) {}
+export class Catalogue {
+  constructor(private readonly textileAnalytics: TextileAnalyticsService) {}
 
   readonly selectedCountry = input<string | null>(null);
   readonly countrySelected = output<string | null>();
   protected readonly searchTerm = signal('');
   protected readonly selectedTextile = signal<Textile | null>(null);
-  protected readonly featuredTextiles = signal<Textile[]>([]);
-  protected readonly featuredLoading = signal(true);
-  protected readonly featuredError = signal<string | null>(null);
-  protected readonly clickTrackingError = signal(false);
-  // Ce lien provisoire sera remplacé par le lien WhatsApp définitif.
-  protected readonly whatsappLink = '#contacts';
+  protected readonly whatsappLink = 'https://wa.me/message/JKPDVMPZFGWSO1';
 
   // Ces tissus alimentent les cartes et les filtres du catalogue.
   protected readonly textiles: Textile[] = [
@@ -40,6 +36,7 @@ export class Catalogue implements OnInit {
       type: 'Wax',
       description: 'Tissu traditionnel ivoirien',
       pattern: 'wax',
+      featured: true,
     },
     {
       id: 'bazin-prestige',
@@ -48,6 +45,7 @@ export class Catalogue implements OnInit {
       type: 'Bazin',
       description: 'Tissu sénégalais raffiné',
       pattern: 'bazin',
+      featured: true,
     },
     {
       id: 'bogolan-moderne',
@@ -56,6 +54,7 @@ export class Catalogue implements OnInit {
       type: 'Bogolan',
       description: 'Tissu malien authentique',
       pattern: 'bogolan',
+      featured: false,
     },
     {
       id: 'kente-traditionnel',
@@ -64,8 +63,12 @@ export class Catalogue implements OnInit {
       type: 'Kente',
       description: 'Tissu ghanéen noble',
       pattern: 'kente',
+      featured: true,
     },
   ];
+
+  // Cette sélection reste manuelle ; Analytics aide à voir les préférences.
+  protected readonly featuredTextiles = this.textiles.filter((textile) => textile.featured);
 
   protected readonly countries = [
     "Côte d'Ivoire",
@@ -75,10 +78,6 @@ export class Catalogue implements OnInit {
     'Sénégal',
     'Togo',
   ];
-
-  ngOnInit(): void {
-    void this.loadFeaturedTextiles();
-  }
 
   // Le pays choisi et la recherche déterminent les tissus affichés.
   protected readonly filteredTextiles = computed(() => {
@@ -106,34 +105,26 @@ export class Catalogue implements OnInit {
     this.countrySelected.emit(country || null);
   }
 
-  // Enregistre le clic et recharge le classement des 30 derniers jours.
-  protected async recordWhatsappClick(textile: Textile): Promise<void> {
-    try {
-      await this.textileClicks.recordClick(textile.id);
-      this.clickTrackingError.set(false);
-      await this.loadFeaturedTextiles();
-    } catch (error) {
-      console.error('Impossible d’enregistrer le clic WhatsApp.', error);
-      this.clickTrackingError.set(true);
+  // Enregistre le clic avant d’ouvrir WhatsApp.
+  protected async openWhatsapp(event: MouseEvent, textile: Textile): Promise<void> {
+    const href = (event.currentTarget as HTMLAnchorElement).href;
+    const opensNewTab = event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
+
+    if (event.button !== 0 || opensNewTab) {
+      void this.recordWhatsappClick(textile);
+      return;
     }
+
+    event.preventDefault();
+    await this.recordWhatsappClick(textile);
+    window.location.assign(href);
   }
 
-  private async loadFeaturedTextiles(): Promise<void> {
-    this.featuredLoading.set(true);
-    this.featuredError.set(null);
-
+  private async recordWhatsappClick(textile: Textile): Promise<void> {
     try {
-      const topIds = await this.textileClicks.getTopTextileIds();
-      this.featuredTextiles.set(
-        topIds
-          .map((id) => this.textiles.find((textile) => textile.id === id))
-          .filter((textile): textile is Textile => textile !== undefined),
-      );
+      await this.textileAnalytics.recordWhatsappClick(textile);
     } catch (error) {
-      console.error('Impossible de charger la sélection du moment.', error);
-      this.featuredError.set('La sélection du moment est temporairement indisponible.');
-    } finally {
-      this.featuredLoading.set(false);
+      console.error('Impossible d’enregistrer le clic dans Firebase Analytics.', error);
     }
   }
 

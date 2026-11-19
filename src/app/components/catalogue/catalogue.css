@@ -27,21 +27,6 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.selection__message {
-  color: #71300e;
-  grid-column: 1 / -1;
-  margin: 0;
-  padding: 1rem 0;
-  text-align: center;
-}
-
-.selection__tracking-error {
-  color: #9c2c18;
-  font-size: 0.9rem;
-  margin: 0.75rem 0 0;
-  text-align: center;
-}
-
 .selection-card {
   background: #fffaf2;
   border: 1px solid #f0dfc9;

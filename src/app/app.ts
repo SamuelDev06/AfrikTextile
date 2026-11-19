@@ -1,9 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { Catalogue } from './components/catalogue/catalogue';
+import { Engagements } from './components/engagements/engagements';
 import { Origins } from './components/origins/origins';
 
 @Component({
-  imports: [Origins, Catalogue],
+  imports: [Origins, Catalogue, Engagements],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',

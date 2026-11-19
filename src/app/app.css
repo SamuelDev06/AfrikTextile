@@ -26,7 +26,7 @@
 
 .brand img {
   border: 2px solid #ef9b08;
-  border-radius: 50%;
+  border-radius: 50%  ;
   height: 2.75rem;
   object-fit: cover;
   object-position: center 15%;
