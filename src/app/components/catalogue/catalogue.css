@@ -50,7 +50,8 @@
   background: #fffaf2;
   border: 1px solid #f0dfc9;
   box-shadow: 0 3px 10px rgb(72 32 16 / 8%);
-  flex: 0 0 calc((100% - 1rem) / 2);
+  flex: 0 0 min(20rem, 100%);
+  max-width: 20rem;
   min-width: 0;
   overflow: hidden;
   scroll-snap-align: start;
@@ -260,7 +261,8 @@
   background: #fffaf2;
   border: 1px solid #f0dfc9;
   box-shadow: 0 3px 10px rgb(72 32 16 / 8%);
-  flex: 0 0 calc((100% - 1rem) / 2);
+  flex: 0 0 min(20rem, 100%);
+  max-width: 20rem;
   min-width: 0;
   overflow: hidden;
   scroll-snap-align: start;
@@ -559,7 +561,7 @@
 
   .selection-card,
   .textile-card {
-    flex-basis: 100%;
+    flex-basis: min(20rem, 100%);
   }
 }
 
