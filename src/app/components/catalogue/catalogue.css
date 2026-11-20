@@ -548,15 +548,26 @@
 @media (max-width: 520px) {
   .catalogue__filters {
     align-items: stretch;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: 0.45rem;
   }
 
   .catalogue__country-filter select {
-    width: auto;
+    max-width: 9rem;
+    padding-left: 0.65rem;
+    width: 100%;
   }
 
   .catalogue__country-filter {
-    align-self: flex-start;
+    flex: 0 1 9rem;
+    min-width: 0;
+  }
+
+  .catalogue__search {
+    flex: 1 1 0;
+    max-width: none;
+    min-width: 0;
   }
 
   .selection-card,

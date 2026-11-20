@@ -1,4 +1,15 @@
-import { Component, computed, input, output, signal } from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  computed,
+  ElementRef,
+  input,
+  NgZone,
+  OnDestroy,
+  output,
+  signal,
+  ViewChild,
+} from '@angular/core';
 import { TextileAnalyticsService } from './textile-analytics.service';
 
 type TextilePattern = 'wax' | 'bazin' | 'bogolan' | 'kente';
@@ -18,11 +29,15 @@ interface Textile {
   templateUrl: './catalogue.html',
   styleUrl: './catalogue.css',
 })
-export class Catalogue {
-  constructor(private readonly textileAnalytics: TextileAnalyticsService) {}
+export class Catalogue implements AfterViewInit, OnDestroy {
+  constructor(
+    private readonly textileAnalytics: TextileAnalyticsService,
+    private readonly zone: NgZone,
+  ) {}
 
   readonly selectedCountry = input<string | null>(null);
   readonly countrySelected = output<string | null>();
+  @ViewChild('catalogueTrack') private catalogueTrack?: ElementRef<HTMLElement>;
   protected readonly searchTerm = signal('');
   protected readonly selectedTextile = signal<Textile | null>(null);
   protected readonly whatsappLink = 'https://wa.me/message/JKPDVMPZFGWSO1';
@@ -96,13 +111,29 @@ export class Catalogue {
     });
   });
 
+  private readonly autoplayAllowed =
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  private autoplayInterval: number | null = null;
+
+  ngAfterViewInit(): void {
+    this.startAutoplay();
+  }
+
+  ngOnDestroy(): void {
+    this.stopAutoplay();
+  }
+
   protected updateSearch(event: Event): void {
     this.searchTerm.set((event.target as HTMLInputElement).value);
+    this.resetCarousel();
   }
 
   protected updateCountry(event: Event): void {
     const country = (event.target as HTMLSelectElement).value;
     this.countrySelected.emit(country || null);
+    this.resetCarousel();
   }
 
   protected moveCarousel(track: HTMLElement, direction: -1 | 1): void {
@@ -112,10 +143,32 @@ export class Catalogue {
     }
 
     const gap = Number.parseFloat(window.getComputedStyle(track).columnGap) || 0;
-    track.scrollBy({
-      left: direction * (firstCard.getBoundingClientRect().width + gap),
-      behavior: 'auto',
+    const maxScroll = track.scrollWidth - track.clientWidth;
+    if (maxScroll <= 0) {
+      return;
+    }
+
+    const step = firstCard.getBoundingClientRect().width + gap;
+    const nextPosition = track.scrollLeft + direction * step;
+    track.scrollTo({
+      left: nextPosition < 0 ? maxScroll : nextPosition > maxScroll ? 0 : nextPosition,
+      behavior: 'smooth',
     });
+  }
+
+  protected pauseAutoplay(): void {
+    this.stopAutoplay();
+  }
+
+  protected resumeAutoplay(): void {
+    this.startAutoplay();
+  }
+
+  protected onCarouselFocusOut(event: FocusEvent, carousel: HTMLElement): void {
+    const nextTarget = event.relatedTarget;
+    if (!(nextTarget instanceof Node) || !carousel.contains(nextTarget)) {
+      this.startAutoplay();
+    }
   }
 
   // Enregistre le clic avant d’ouvrir WhatsApp.
@@ -152,5 +205,34 @@ export class Catalogue {
 
   protected clearSelectedTextile(): void {
     this.selectedTextile.set(null);
+  }
+
+  private startAutoplay(): void {
+    if (!this.autoplayAllowed || this.autoplayInterval !== null) {
+      return;
+    }
+
+    this.zone.runOutsideAngular(() => {
+      this.autoplayInterval = window.setInterval(() => {
+        const track = this.catalogueTrack?.nativeElement;
+        if (!track || track.scrollWidth <= track.clientWidth) {
+          return;
+        }
+        this.moveCarousel(track, 1);
+      }, 4500);
+    });
+  }
+
+  private stopAutoplay(): void {
+    if (this.autoplayInterval !== null) {
+      window.clearInterval(this.autoplayInterval);
+      this.autoplayInterval = null;
+    }
+  }
+
+  private resetCarousel(): void {
+    if (this.catalogueTrack) {
+      this.catalogueTrack.nativeElement.scrollLeft = 0;
+    }
   }
 }

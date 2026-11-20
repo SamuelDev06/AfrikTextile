@@ -1,0 +1,206 @@
+<div class="dashboard">
+  @if (sidebarOpen()) {
+    <button
+      class="dashboard__backdrop"
+      type="button"
+      aria-label="Fermer le menu"
+      (click)="closeSidebar()"
+    ></button>
+  }
+
+  <aside class="dashboard__sidebar" [class.dashboard__sidebar--open]="sidebarOpen()">
+    <a class="dashboard__brand" routerLink="/admin" aria-label="Afrik Textile, tableau de bord">
+      <span class="dashboard__brand-mark" aria-hidden="true">AT</span>
+      <span>Afrik<br />Textile</span>
+    </a>
+
+    <nav class="dashboard__navigation" aria-label="Navigation du tableau de bord">
+      <a class="dashboard__nav-link dashboard__nav-link--active" routerLink="/admin" aria-current="page">
+        <span class="dashboard__nav-icon" aria-hidden="true">⌂</span>
+        Tableau de bord
+      </a>
+      <a class="dashboard__nav-link" href="#tissus" (click)="closeSidebar()">
+        <span class="dashboard__nav-icon" aria-hidden="true">▱</span>
+        Gestion des tissus
+      </a>
+      <a class="dashboard__nav-link" href="#pays" (click)="closeSidebar()">
+        <span class="dashboard__nav-icon" aria-hidden="true">◎</span>
+        Gestion des pays
+      </a>
+    </nav>
+
+    <a class="dashboard__nav-link dashboard__nav-link--exit" routerLink="/">
+      <span class="dashboard__nav-icon" aria-hidden="true">↗</span>
+      Retour à la vitrine
+    </a>
+  </aside>
+
+  <div class="dashboard__workspace">
+    <header class="dashboard__topbar">
+      <button
+        class="dashboard__menu-toggle"
+        type="button"
+        aria-label="Ouvrir le menu"
+        [attr.aria-expanded]="sidebarOpen()"
+        (click)="sidebarOpen.set(!sidebarOpen())"
+      >
+        <span aria-hidden="true">☰</span>
+      </button>
+      <div class="dashboard__heading">
+        <p class="dashboard__eyebrow">Afrik Textile / Administration</p>
+        <h1>Tableau de bord</h1>
+        <p>Bienvenue dans votre espace d’administration</p>
+      </div>
+      <a class="dashboard__admin" routerLink="/" aria-label="Retourner au site public">
+        <span class="dashboard__admin-avatar" aria-hidden="true">A</span>
+        <span>Admin</span>
+        <span aria-hidden="true">⌄</span>
+      </a>
+    </header>
+
+    <main class="dashboard__content">
+      <p class="dashboard__demo-note">
+        Aperçu de démonstration : ces tissus ne sont pas encore enregistrés.
+      </p>
+
+      <section class="dashboard__stats" aria-label="Résumé du catalogue">
+        <article class="stat-card stat-card--fabric">
+          <span class="stat-card__icon" aria-hidden="true">▤</span>
+          <div>
+            <strong>{{ stats().total }}</strong>
+            <span>Tissus au total</span>
+          </div>
+        </article>
+        <article class="stat-card stat-card--countries">
+          <span class="stat-card__icon" aria-hidden="true">🌍</span>
+          <div>
+            <strong>{{ stats().countries }}</strong>
+            <span>Pays représentés</span>
+          </div>
+        </article>
+        <article class="stat-card stat-card--available">
+          <span class="stat-card__icon" aria-hidden="true">✓</span>
+          <div>
+            <strong>{{ stats().available }}</strong>
+            <span>Tissus disponibles</span>
+          </div>
+        </article>
+        <article class="stat-card stat-card--out">
+          <span class="stat-card__icon" aria-hidden="true">!</span>
+          <div>
+            <strong>{{ stats().outOfStock }}</strong>
+            <span>En rupture de stock</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="dashboard-panel" id="pays" aria-labelledby="countries-title">
+        <div class="dashboard-panel__heading">
+          <div class="dashboard-panel__title">
+            <span class="dashboard-panel__icon" aria-hidden="true">◎</span>
+            <div>
+              <h2 id="countries-title">Gestion des pays</h2>
+              <p>Les pays d’origine présents dans le catalogue</p>
+            </div>
+          </div>
+          <button class="dashboard__button" type="button" disabled title="Disponible dans une prochaine étape">
+            <span aria-hidden="true">＋</span> Ajouter un pays
+          </button>
+        </div>
+
+        <div class="country-grid">
+          @for (country of countryCounts(); track country.name) {
+            <article class="country-card">
+              <span class="country-card__flag" aria-hidden="true">{{ country.flag }}</span>
+              <h3>{{ country.name }}</h3>
+              <p>{{ country.count }} tissu{{ country.count > 1 ? 's' : '' }}</p>
+            </article>
+          }
+        </div>
+      </section>
+
+      <section class="dashboard-panel dashboard-panel--fabrics" id="tissus" aria-labelledby="fabrics-title">
+        <div class="dashboard-panel__heading dashboard-panel__heading--fabrics">
+          <div class="dashboard-panel__title">
+            <span class="dashboard-panel__icon dashboard-panel__icon--pattern" aria-hidden="true">✳</span>
+            <div>
+              <h2 id="fabrics-title">Gestion des tissus</h2>
+              <p>Consultez les informations du catalogue</p>
+            </div>
+          </div>
+          <div class="dashboard__filters">
+            <label class="dashboard__search">
+              <span aria-hidden="true">⌕</span>
+              <span class="visually-hidden">Rechercher un tissu</span>
+              <input
+                type="search"
+                placeholder="Rechercher un tissu..."
+                [value]="searchTerm()"
+                (input)="updateSearch($event)"
+              />
+            </label>
+            <label class="visually-hidden" for="country-filter">Filtrer par pays</label>
+            <select id="country-filter" (change)="updateCountry($event)">
+              <option value="">Tous les pays</option>
+              @for (country of countries; track country.name) {
+                <option [value]="country.name">{{ country.name }}</option>
+              }
+            </select>
+            <label class="visually-hidden" for="status-filter">Filtrer par statut</label>
+            <select id="status-filter" (change)="updateStatus($event)">
+              <option value="">Tous les statuts</option>
+              <option value="available">Disponible</option>
+              <option value="low-stock">Stock faible</option>
+              <option value="out-of-stock">Rupture de stock</option>
+            </select>
+            <button class="dashboard__button" type="button" disabled title="Disponible dans une prochaine étape">
+              <span aria-hidden="true">＋</span> Ajouter un tissu
+            </button>
+          </div>
+        </div>
+
+        <div class="fabric-table-wrap">
+          <table class="fabric-table">
+            <thead>
+              <tr>
+                <th scope="col">Aperçu</th>
+                <th scope="col">Nom du tissu</th>
+                <th scope="col">Pays d’origine</th>
+                <th scope="col">Description</th>
+                <th scope="col">Prix</th>
+                <th scope="col">Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (textile of filteredTextiles(); track textile.id) {
+                <tr>
+                  <td>
+                    <span
+                      class="fabric-swatch fabric-swatch--{{ textile.pattern }}"
+                      role="img"
+                      [attr.aria-label]="'Motif provisoire pour ' + textile.name"
+                    ></span>
+                  </td>
+                  <th scope="row">{{ textile.name }}</th>
+                  <td>{{ textile.country }}</td>
+                  <td>{{ textile.description }}</td>
+                  <td>{{ textile.price }}</td>
+                  <td>
+                    <span class="status-badge status-badge--{{ textile.status }}">
+                      <span aria-hidden="true"></span>
+                      {{ textile.status === 'available' ? 'Disponible' : textile.status === 'low-stock' ? 'Stock faible' : 'Rupture de stock' }}
+                    </span>
+                  </td>
+                </tr>
+              } @empty {
+                <tr>
+                  <td class="fabric-table__empty" colspan="6">Aucun tissu ne correspond à ces filtres.</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>

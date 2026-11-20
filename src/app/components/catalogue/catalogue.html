@@ -153,7 +153,14 @@
     </div>
   </div>
 
-  <div class="catalogue__carousel">
+  <div
+    #catalogueCarousel
+    class="catalogue__carousel"
+    (pointerenter)="pauseAutoplay()"
+    (pointerleave)="resumeAutoplay()"
+    (focusin)="pauseAutoplay()"
+    (focusout)="onCarouselFocusOut($event, catalogueCarousel)"
+  >
     @if (filteredTextiles().length > 1) {
       <button
         class="catalogue__carousel-button catalogue__carousel-button--previous"
