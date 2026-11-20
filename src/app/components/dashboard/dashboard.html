@@ -15,15 +15,32 @@
     </a>
 
     <nav class="dashboard__navigation" aria-label="Navigation du tableau de bord">
-      <a class="dashboard__nav-link dashboard__nav-link--active" routerLink="/admin" aria-current="page">
+      <a
+        class="dashboard__nav-link"
+        [class.dashboard__nav-link--active]="activeSection() === 'overview'"
+        routerLink="/admin"
+        [attr.aria-current]="activeSection() === 'overview' ? 'page' : null"
+      >
         <span class="dashboard__nav-icon" aria-hidden="true">⌂</span>
         Tableau de bord
       </a>
-      <a class="dashboard__nav-link" href="#tissus" (click)="closeSidebar()">
+      <a
+        class="dashboard__nav-link"
+        [class.dashboard__nav-link--active]="activeSection() === 'textiles'"
+        routerLink="/admin/textiles"
+        [attr.aria-current]="activeSection() === 'textiles' ? 'page' : null"
+        (click)="closeSidebar()"
+      >
         <span class="dashboard__nav-icon" aria-hidden="true">▱</span>
         Gestion des tissus
       </a>
-      <a class="dashboard__nav-link" href="#pays" (click)="closeSidebar()">
+      <a
+        class="dashboard__nav-link"
+        [class.dashboard__nav-link--active]="activeSection() === 'countries'"
+        routerLink="/admin/countries"
+        [attr.aria-current]="activeSection() === 'countries' ? 'page' : null"
+        (click)="closeSidebar()"
+      >
         <span class="dashboard__nav-icon" aria-hidden="true">◎</span>
         Gestion des pays
       </a>
@@ -48,8 +65,8 @@
       </button>
       <div class="dashboard__heading">
         <p class="dashboard__eyebrow">Afrik Textile / Administration</p>
-        <h1>Tableau de bord</h1>
-        <p>Bienvenue dans votre espace d’administration</p>
+        <h1>{{ pageTitle() }}</h1>
+        <p>{{ pageDescription() }}</p>
       </div>
       <div class="dashboard__account">
         <input
@@ -94,6 +111,7 @@
         <p class="dashboard__data-error" role="alert">{{ profilePhotoError() }}</p>
       }
 
+      @if (activeSection() === 'overview') {
       <section class="dashboard__stats" aria-label="Résumé du catalogue">
         <article class="stat-card stat-card--fabric">
           <span class="stat-card__icon" aria-hidden="true">▤</span>
@@ -124,7 +142,27 @@
           </div>
         </article>
       </section>
+      <section class="dashboard__quick-links" aria-label="Accès rapide aux sections">
+        <a class="dashboard__quick-link" routerLink="/admin/textiles">
+          <span class="dashboard-panel__icon dashboard-panel__icon--pattern" aria-hidden="true">✳</span>
+          <span>
+            <strong>Gestion des tissus</strong>
+            <small>Consulter, ajouter ou mettre à jour le catalogue</small>
+          </span>
+          <span class="dashboard__quick-arrow" aria-hidden="true">→</span>
+        </a>
+        <a class="dashboard__quick-link" routerLink="/admin/countries">
+          <span class="dashboard-panel__icon" aria-hidden="true">◎</span>
+          <span>
+            <strong>Gestion des pays</strong>
+            <small>Gérer les pays d’origine des tissus</small>
+          </span>
+          <span class="dashboard__quick-arrow" aria-hidden="true">→</span>
+        </a>
+      </section>
+      }
 
+      @if (activeSection() === 'countries') {
       <section class="dashboard-panel" id="pays" aria-labelledby="countries-title">
         <div class="dashboard-panel__heading">
           <div class="dashboard-panel__title">
@@ -174,7 +212,9 @@
           }
         </div>
       </section>
+      }
 
+      @if (activeSection() === 'textiles') {
       <section class="dashboard-panel dashboard-panel--fabrics" id="tissus" aria-labelledby="fabrics-title">
         <div class="dashboard-panel__heading dashboard-panel__heading--fabrics">
           <div class="dashboard-panel__title">
@@ -266,6 +306,7 @@
           </table>
         </div>
       </section>
+      }
     </main>
   </div>
 </div>

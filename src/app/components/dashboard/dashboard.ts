@@ -1,5 +1,6 @@
 import { Component, computed, NgZone, OnDestroy, OnInit, signal } from '@angular/core';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import type { Subscription } from 'rxjs';
 import type { Unsubscribe } from 'firebase/firestore';
 import { AdminAuthService } from '../../firebase/admin-auth.service';
 import { CountryCatalogueService } from '../../firebase/country-catalogue.service';
@@ -36,11 +37,13 @@ export class Dashboard implements OnInit, OnDestroy {
     private readonly auth: AdminAuthService,
     private readonly countryCatalogue: CountryCatalogueService,
     private readonly catalogue: TextileCatalogueService,
+    private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly zone: NgZone,
   ) {}
 
   protected readonly sidebarOpen = signal(false);
+  protected readonly activeSection = signal<'overview' | 'textiles' | 'countries'>('overview');
   protected readonly searchTerm = signal('');
   protected readonly selectedCountry = signal('');
   protected readonly selectedStatus = signal('');
@@ -91,6 +94,27 @@ export class Dashboard implements OnInit, OnDestroy {
   private unsubscribeTextiles: Unsubscribe | null = null;
   private unsubscribeCountries: Unsubscribe | null = null;
   protected readonly countries = signal<Country[]>([]);
+  protected readonly pageTitle = computed(() => {
+    switch (this.activeSection()) {
+      case 'textiles':
+        return 'Gestion des tissus';
+      case 'countries':
+        return 'Gestion des pays';
+      default:
+        return 'Tableau de bord';
+    }
+  });
+  protected readonly pageDescription = computed(() => {
+    switch (this.activeSection()) {
+      case 'textiles':
+        return 'Consultez et gérez les tissus du catalogue.';
+      case 'countries':
+        return 'Consultez et gérez les pays d’origine.';
+      default:
+        return 'Bienvenue dans votre espace d’administration.';
+    }
+  });
+  private routeDataSubscription: Subscription | null = null;
 
   protected readonly stats = computed(() => {
     const textiles = this.textiles();
@@ -130,6 +154,11 @@ export class Dashboard implements OnInit, OnDestroy {
   );
 
   ngOnInit(): void {
+    this.routeDataSubscription = this.route.data.subscribe((data) => {
+      const section = data['section'];
+      this.activeSection.set(section === 'textiles' || section === 'countries' ? section : 'overview');
+      this.sidebarOpen.set(false);
+    });
     this.profilePhotoUrl.set(this.auth.currentUser?.photoURL ?? null);
     this.unsubscribeCountries = this.countryCatalogue.watchCountries(
       (countries) =>
@@ -162,6 +191,7 @@ export class Dashboard implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.routeDataSubscription?.unsubscribe();
     this.unsubscribeTextiles?.();
     this.unsubscribeCountries?.();
     this.releaseImagePreviews();
