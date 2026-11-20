@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core';
-import { getApp, getApps, initializeApp } from 'firebase/app';
 import { getAnalytics, isSupported, logEvent } from 'firebase/analytics';
 import type { Analytics } from 'firebase/analytics';
-import { firebaseConfig } from '../../firebase/firebase.config';
+import { firebaseApp } from '../../firebase/firebase-app';
 
 interface TextileClick {
   id: string;
@@ -23,8 +22,7 @@ export class TextileAnalyticsService {
       return null;
     }
 
-    const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
-    return getAnalytics(app);
+    return getAnalytics(firebaseApp);
   }
 
   async recordWhatsappClick(textile: TextileClick): Promise<void> {

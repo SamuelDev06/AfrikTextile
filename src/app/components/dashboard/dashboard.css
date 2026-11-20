@@ -135,10 +135,15 @@
 
 .dashboard__admin {
   align-items: center;
+  background: transparent;
+  border: 0;
   color: var(--dashboard-brown);
+  cursor: pointer;
   display: inline-flex;
+  font: inherit;
   font-weight: 700;
   gap: 0.55rem;
+  padding: 0;
   text-decoration: none;
 }
 

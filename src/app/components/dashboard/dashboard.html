@@ -51,11 +51,11 @@
         <h1>Tableau de bord</h1>
         <p>Bienvenue dans votre espace d’administration</p>
       </div>
-      <a class="dashboard__admin" routerLink="/" aria-label="Retourner au site public">
+      <button class="dashboard__admin" type="button" aria-label="Se déconnecter" (click)="signOut()">
         <span class="dashboard__admin-avatar" aria-hidden="true">A</span>
         <span>Admin</span>
-        <span aria-hidden="true">⌄</span>
-      </a>
+        <span aria-hidden="true">↗</span>
+      </button>
     </header>
 
     <main class="dashboard__content">

@@ -1,5 +1,6 @@
 import { Component, computed, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { AdminAuthService } from '../../firebase/admin-auth.service';
 
 type TextileStatus = 'available' | 'low-stock' | 'out-of-stock';
 
@@ -25,6 +26,11 @@ interface Country {
   templateUrl: './dashboard.html',
 })
 export class Dashboard {
+  constructor(
+    private readonly auth: AdminAuthService,
+    private readonly router: Router,
+  ) {}
+
   protected readonly sidebarOpen = signal(false);
   protected readonly searchTerm = signal('');
   protected readonly selectedCountry = signal('');
@@ -126,5 +132,14 @@ export class Dashboard {
 
   protected closeSidebar(): void {
     this.sidebarOpen.set(false);
+  }
+
+  protected async signOut(): Promise<void> {
+    try {
+      await this.auth.signOut();
+      await this.router.navigateByUrl('/admin/login');
+    } catch (error) {
+      console.error('Impossible de fermer la session administrateur.', error);
+    }
   }
 }

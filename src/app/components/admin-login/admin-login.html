@@ -1,0 +1,54 @@
+<main class="login-page">
+  <section class="login-card" aria-labelledby="login-title">
+    <a class="login-brand" routerLink="/" aria-label="Afrik Textile, retourner à l’accueil">
+      <img src="/img/AfrikTextile.jpg" alt="" />
+      <span>Afrik Textile</span>
+    </a>
+
+    <div class="login-card__intro">
+      <p class="login-card__eyebrow">Espace sécurisé</p>
+      <h1 id="login-title">Connexion admin</h1>
+      <p>Connectez-vous pour gérer le catalogue Afrik Textile.</p>
+    </div>
+
+    <form class="login-form" (submit)="submit($event)">
+      <label for="admin-email">Adresse e-mail</label>
+      <input
+        id="admin-email"
+        name="email"
+        type="email"
+        autocomplete="username"
+        placeholder="admin@exemple.com"
+        required
+        [value]="email()"
+        [disabled]="isSubmitting()"
+        (input)="updateEmail($event)"
+      />
+
+      <label for="admin-password">Mot de passe</label>
+      <input
+        id="admin-password"
+        name="password"
+        type="password"
+        autocomplete="current-password"
+        placeholder="Votre mot de passe"
+        minlength="6"
+        required
+        [value]="password()"
+        [disabled]="isSubmitting()"
+        (input)="updatePassword($event)"
+      />
+
+      @if (errorMessage()) {
+        <p class="login-form__error" role="alert">{{ errorMessage() }}</p>
+      }
+
+      <button class="login-form__submit" type="submit" [disabled]="isSubmitting()">
+        {{ isSubmitting() ? 'Connexion en cours...' : 'Se connecter' }}
+      </button>
+    </form>
+
+    <p class="login-card__note">Accès réservé à l’administrateur. Aucun compte ne peut être créé ici.</p>
+    <a class="login-card__back" routerLink="/">← Retour à la vitrine</a>
+  </section>
+</main>
