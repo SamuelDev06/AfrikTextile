@@ -28,6 +28,10 @@
     <span aria-hidden="true"></span>
   </button>
 
+  @if (isMenuOpen()) {
+    <button class="menu-backdrop" type="button" aria-label="Fermer le menu" (click)="closeMenu()"></button>
+  }
+
   <nav
     class="site-navigation"
     id="main-navigation"

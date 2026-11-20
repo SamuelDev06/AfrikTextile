@@ -11,6 +11,7 @@ import { AdminAuthService } from '../../firebase/admin-auth.service';
 export class AdminLogin {
   protected readonly email = signal('');
   protected readonly password = signal('');
+  protected readonly showPassword = signal(false);
   protected readonly isSubmitting = signal(false);
   protected readonly errorMessage = signal('');
 

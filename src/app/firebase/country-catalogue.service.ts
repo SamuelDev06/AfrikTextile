@@ -69,7 +69,7 @@ export class CountryCatalogueService {
       throw new Error('COUNTRY_ALREADY_EXISTS');
     }
 
-    const countryData = { name, flag, updatedAt: serverTimestamp() };
+    const countryData = { name, flag, ...(draft.flagUrl ? { flagUrl: draft.flagUrl } : {}), updatedAt: serverTimestamp() };
     if (id) {
       const countryRef = doc(this.firestore, 'countries', id);
       const existing = await getDoc(countryRef);
@@ -119,11 +119,11 @@ export class CountryCatalogueService {
   }
 
   private parseCountry(id: string, data: DocumentData): Country {
-    const { name, flag } = data;
+    const { name, flag, flagUrl } = data;
     if (typeof name !== 'string' || typeof flag !== 'string' || !name.trim() || !flag.trim()) {
       throw new Error(`Données invalides pour le pays ${id}.`);
     }
 
-    return { id, name, flag };
+    return { id, name, flag, ...(typeof flagUrl === 'string' ? { flagUrl } : {}) };
   }
 }

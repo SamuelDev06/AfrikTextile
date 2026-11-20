@@ -21,7 +21,7 @@
         routerLink="/admin"
         [attr.aria-current]="activeSection() === 'overview' ? 'page' : null"
       >
-        <span class="dashboard__nav-icon" aria-hidden="true">⌂</span>
+        <svg class="dashboard__nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z" /></svg>
         Tableau de bord
       </a>
       <a
@@ -31,7 +31,7 @@
         [attr.aria-current]="activeSection() === 'textiles' ? 'page' : null"
         (click)="closeSidebar()"
       >
-        <span class="dashboard__nav-icon" aria-hidden="true">▱</span>
+        <svg class="dashboard__nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16l-2 13H6L4 7Z"/><path d="M8 7a4 4 0 0 1 8 0M9 11v5m6-5v5"/></svg>
         Gestion des tissus
       </a>
       <a
@@ -41,28 +41,19 @@
         [attr.aria-current]="activeSection() === 'countries' ? 'page' : null"
         (click)="closeSidebar()"
       >
-        <span class="dashboard__nav-icon" aria-hidden="true">◎</span>
+        <svg class="dashboard__nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
         Gestion des pays
       </a>
     </nav>
 
     <a class="dashboard__nav-link dashboard__nav-link--exit" routerLink="/">
-      <span class="dashboard__nav-icon" aria-hidden="true">↗</span>
+      <svg class="dashboard__nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6m0-6-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg>
       Retour à la vitrine
     </a>
   </aside>
 
   <div class="dashboard__workspace">
     <header class="dashboard__topbar">
-      <button
-        class="dashboard__menu-toggle"
-        type="button"
-        aria-label="Ouvrir le menu"
-        [attr.aria-expanded]="sidebarOpen()"
-        (click)="sidebarOpen.set(!sidebarOpen())"
-      >
-        <span aria-hidden="true">☰</span>
-      </button>
       <div class="dashboard__heading">
         <p class="dashboard__eyebrow">Afrik Textile / Administration</p>
         <h1>{{ pageTitle() }}</h1>
@@ -98,6 +89,7 @@
           Se déconnecter
         </button>
       </div>
+      <button class="dashboard__menu-toggle" type="button" aria-label="Ouvrir le menu" [attr.aria-expanded]="sidebarOpen()" (click)="sidebarOpen.set(!sidebarOpen())"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
     </header>
 
     <main class="dashboard__content">
@@ -194,7 +186,11 @@
           } @else {
             @for (country of countryCounts(); track country.id) {
               <article class="country-card">
-                <span class="country-card__flag" aria-hidden="true">{{ country.flag }}</span>
+                @if (country.flagUrl) {
+                  <img class="country-card__flag-image" [src]="country.flagUrl" [alt]="'Drapeau de ' + country.name" />
+                } @else {
+                  <span class="country-card__flag" aria-hidden="true">{{ country.flag }}</span>
+                }
                 <h3>{{ country.name }}</h3>
                 <p>{{ country.count }} tissu{{ country.count > 1 ? 's' : '' }}</p>
                 <div class="country-card__actions">
@@ -286,7 +282,7 @@
                     <th scope="row">{{ textile.name }}</th>
                     <td>{{ textile.country }}</td>
                     <td>{{ textile.description }}</td>
-                    <td>{{ textile.price }}</td>
+                    <td>{{ textile.price }} FCFA / {{ textile.priceUsd }} $</td>
                     <td>
                       <span class="status-badge status-badge--{{ textile.status }}">
                         <span aria-hidden="true"></span>
@@ -370,16 +366,29 @@
       (input)="updateTextField('description', $event)"
     ></textarea>
 
-    <label for="textile-price">Prix</label>
+    <label for="textile-price">Prix en FCFA</label>
     <input
       id="textile-price"
       type="text"
       maxlength="40"
-      placeholder="Ex. 5 000 FCFA"
+      placeholder="Ex. 5 000"
       required
       [value]="draft().price"
       [disabled]="isSaving()"
       (input)="updateTextField('price', $event)"
+    />
+
+    <label for="textile-price-usd">Prix en dollars US</label>
+    <input
+      id="textile-price-usd"
+      type="number"
+      min="0"
+      step="0.01"
+      placeholder="Prix calculé automatiquement, modifiable"
+      required
+      [value]="draft().priceUsd"
+      [disabled]="isSaving()"
+      (input)="updateTextField('priceUsd', $event)"
     />
 
     <label for="textile-status">Statut</label>
@@ -516,17 +525,11 @@
       <p class="country-form__hint">Le nom ne peut pas être modifié tant que des tissus utilisent ce pays.</p>
     }
 
-    <label for="country-flag">Drapeau (emoji)</label>
-    <input
-      id="country-flag"
-      type="text"
-      maxlength="8"
-      placeholder="Ex. 🇨🇮"
-      required
-      [value]="countryDraft().flag"
-      [disabled]="isSavingCountry()"
-      (input)="updateCountryField('flag', $event)"
-    />
+    <label for="country-flag">Image du drapeau</label>
+    <input id="country-flag" type="file" accept="image/jpeg,image/png,image/webp" [required]="!editingCountry()?.flagUrl" [disabled]="isSavingCountry()" (change)="selectCountryFlag($event)" />
+    @if (countryFlagPreview()) {
+      <img class="country-flag-preview" [src]="countryFlagPreview()!" alt="Aperçu du drapeau" />
+    }
 
     @if (countryFormError()) {
       <p class="textile-form__error" role="alert">{{ countryFormError() }}</p>

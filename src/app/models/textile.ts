@@ -17,6 +17,7 @@ export interface Textile {
   country: string;
   description: string;
   price: string;
+  priceUsd: string;
   status: TextileStatus;
   imageUrl: string;
   imagePath: string;

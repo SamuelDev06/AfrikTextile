@@ -202,13 +202,14 @@ export class TextileCatalogueService {
   }
 
   private parseTextile(id: string, data: DocumentData): Textile {
-    const { name, country, description, price, status, featured } = data;
+    const { name, country, description, price, priceUsd, status, featured } = data;
     const images = this.readImages(data);
     if (
       typeof name !== 'string' ||
       typeof country !== 'string' ||
       typeof description !== 'string' ||
       typeof price !== 'string' ||
+      (priceUsd !== undefined && typeof priceUsd !== 'string') ||
       !isTextileStatus(status) ||
       typeof featured !== 'boolean'
     ) {
@@ -221,6 +222,7 @@ export class TextileCatalogueService {
       country,
       description,
       price,
+      priceUsd: typeof priceUsd === 'string' ? priceUsd : '',
       status,
       imageUrl: images[0].url,
       imagePath: images[0].path,

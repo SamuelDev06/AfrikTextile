@@ -71,6 +71,9 @@
   padding: 0.7rem 0.85rem;
   text-decoration: none;
   transition: background-color 160ms ease, color 160ms ease;
+  position: relative;
+  flex-direction: row;
+  white-space: nowrap;
 }
 
 .dashboard__nav-link:hover,
@@ -79,17 +82,22 @@
   color: #fff;
 }
 
+.dashboard__nav-link::before { background: var(--dashboard-gold); border-radius: 0 0.25rem 0.25rem 0; content: ''; inset: 0 auto 0 0; opacity: 0; position: absolute; transform: scaleY(0.4); transition: opacity 180ms ease, transform 180ms ease; width: 3px; }
+.dashboard__nav-link--active::before { opacity: 1; transform: scaleY(1); }
+
 .dashboard__nav-link--exit {
   margin-top: auto;
 }
 
 .dashboard__nav-icon {
-  align-items: center;
-  display: inline-flex;
-  font-size: 1.45rem;
-  height: 1.65rem;
-  justify-content: center;
-  width: 1.65rem;
+  fill: none;
+  flex: 0 0 1.35rem;
+  height: 1.35rem;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+  width: 1.35rem;
 }
 
 .dashboard__workspace {
@@ -289,6 +297,7 @@
 }
 
 .dashboard__quick-link > span:nth-child(2) {
+  min-width: 0;
   display: grid;
   gap: 0.2rem;
   min-width: 0;
@@ -318,7 +327,15 @@
   overflow: hidden;
   padding: 0.9rem 1rem;
   position: relative;
+  transition: transform 180ms ease, box-shadow 180ms ease;
 }
+
+.stat-card:hover, .country-card:hover { box-shadow: 0 0.8rem 1.6rem rgb(74 31 11 / 9%); transform: translateY(-3px); }
+.dashboard-panel, .stat-card, .dashboard__quick-link { animation: dashboard-enter 320ms ease both; }
+.dashboard__quick-link:nth-child(2) { animation-delay: 55ms; }
+.country-card { transition: transform 180ms ease, box-shadow 180ms ease; }
+@keyframes dashboard-enter { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
 
 .stat-card::after {
   background: linear-gradient(120deg, transparent, rgb(239 155 8 / 16%));
@@ -439,6 +456,7 @@
   border-radius: 999px;
   color: white;
   display: inline-flex;
+  flex: 0 0 2.5rem;
   flex: 0 0 auto;
   font: inherit;
   font-size: 0.82rem;
@@ -514,6 +532,15 @@
   width: 3.2rem;
 }
 
+.country-card__flag-image, .country-flag-preview {
+  background: #fff;
+  border: 1px solid #efdfcb;
+  object-fit: cover;
+}
+
+.country-card__flag-image { border-radius: 50%; height: 3.25rem; width: 3.25rem; }
+.country-flag-preview { border-radius: 0.65rem; height: 5rem; margin-top: 0.5rem; width: 8rem; }
+
 .country-card h3 {
   font-size: 0.9rem;
   margin: 0.5rem 0 0.1rem;
@@ -577,6 +604,11 @@
 
 .dashboard__search,
 .dashboard__filters select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='none' stroke='%23643b22' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m3 6 5 5 5-5'/%3E%3C/svg%3E");
+  background-position: right 0.8rem center;
+  background-repeat: no-repeat;
+  background-size: 0.8rem;
   background: #fffaf2;
   border: 1px solid #eddcc5;
   border-radius: 999px;
@@ -620,7 +652,7 @@
   font: inherit;
   font-size: 0.8rem;
   max-width: 11rem;
-  padding: 0 0.75rem;
+  padding: 0 2rem 0 0.75rem;
 }
 
 .fabric-table-wrap {
@@ -1053,10 +1085,23 @@
     border-radius: 0.55rem;
     color: var(--dashboard-brown);
     display: inline-flex;
+    order: 1;
     flex: 0 0 2.6rem;
     font-size: 1.3rem;
     height: 2.6rem;
     justify-content: center;
+  }
+
+  .dashboard__heading { order: 2; }
+  .dashboard__account { order: 3; }
+
+  .dashboard__menu-toggle svg {
+    fill: none;
+    height: 1.35rem;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-width: 2;
+    width: 1.35rem;
   }
 
   .dashboard__heading h1 {
@@ -1161,9 +1206,13 @@
   }
 
   .dashboard__filters {
-    align-items: stretch;
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding: 0.2rem 0.15rem 0.6rem;
+    scrollbar-width: thin;
   }
 
   .dashboard__search,
@@ -1173,9 +1222,9 @@
     width: 100%;
   }
 
-  .dashboard__search {
-    grid-column: 1 / -1;
-  }
+  .dashboard__search { flex: 0 0 12rem; }
+  .dashboard__filters select { flex: 0 0 9rem; }
+  .dashboard__filters .dashboard__button { flex: 0 0 auto; white-space: nowrap; }
 
   .dashboard__button {
     justify-content: center;

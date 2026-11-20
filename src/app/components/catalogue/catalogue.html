@@ -41,7 +41,7 @@
             <div class="selection-card__content">
               <h3>{{ textile.name }}</h3>
               <p>{{ textile.description }}</p>
-              <p class="selection-card__price">Prix : {{ textile.price }}</p>
+              <p class="selection-card__price">{{ textile.price }} FCFA · {{ textile.priceUsd }} $</p>
               <div class="selection-card__actions">
                 <button
                   class="textile-card__details"
@@ -204,7 +204,7 @@
           <div class="textile-card__content">
             <h3 class="textile-card__name">{{ textile.name }}</h3>
             <p class="textile-card__description">{{ textile.description }}</p>
-            <p class="textile-card__price">Prix : {{ textile.price }}</p>
+            <p class="textile-card__price">{{ textile.price }} FCFA · {{ textile.priceUsd }} $</p>
             <div class="textile-card__actions">
               <a
                 class="textile-card__whatsapp"
@@ -338,7 +338,7 @@
           </div>
           <div>
             <dt>Prix</dt>
-            <dd>{{ textile.price }}</dd>
+            <dd>{{ textile.price }} FCFA · {{ textile.priceUsd }} $</dd>
           </div>
           <div>
             <dt>Statut</dt>

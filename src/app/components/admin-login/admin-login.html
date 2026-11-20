@@ -26,18 +26,30 @@
       />
 
       <label for="admin-password">Mot de passe</label>
-      <input
-        id="admin-password"
-        name="password"
-        type="password"
-        autocomplete="current-password"
-        placeholder="Votre mot de passe"
-        minlength="6"
-        required
-        [value]="password()"
-        [disabled]="isSubmitting()"
-        (input)="updatePassword($event)"
-      />
+      <div class="login-form__password">
+        <input
+          id="admin-password"
+          name="password"
+          [type]="showPassword() ? 'text' : 'password'"
+          autocomplete="current-password"
+          placeholder="Votre mot de passe"
+          minlength="6"
+          required
+          [value]="password()"
+          [disabled]="isSubmitting()"
+          (input)="updatePassword($event)"
+        />
+        <button type="button" class="login-form__password-toggle" (click)="showPassword.update(value => !value)" [attr.aria-label]="showPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            @if (showPassword()) {
+              <path d="M3 3l18 18M10.6 10.6a2 2 0 002.8 2.8M9.9 5.2A10.8 10.8 0 0112 5c5 0 8.5 4.2 9.5 7a10.9 10.9 0 01-3.1 4.5M6.2 6.2A11.8 11.8 0 002.5 12c.5 1.4 1.6 3.1 3.7 4.5A10 10 0 0012 19a10.8 10.8 0 003-.4" />
+            } @else {
+              <path d="M2.5 12S6 5 12 5s9.5 7 9.5 7-3.5 7-9.5 7-9.5-7-9.5-7z" />
+              <circle cx="12" cy="12" r="3" />
+            }
+          </svg>
+        </button>
+      </div>
 
       @if (errorMessage()) {
         <p class="login-form__error" role="alert">{{ errorMessage() }}</p>

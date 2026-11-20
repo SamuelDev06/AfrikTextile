@@ -2,20 +2,25 @@ import { Component, computed, NgZone, OnDestroy, OnInit, signal } from '@angular
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import type { Subscription } from 'rxjs';
 import type { Unsubscribe } from 'firebase/firestore';
+import { deleteObject, getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
 import { AdminAuthService } from '../../firebase/admin-auth.service';
 import { CountryCatalogueService } from '../../firebase/country-catalogue.service';
 import { TextileCatalogueService } from '../../firebase/textile-catalogue.service';
 import type { Country, CountryDraft } from '../../models/country';
+import { firebaseApp } from '../../firebase/firebase-app';
 import type { Textile, TextileDraft, TextileImage, TextileImagesDraft, TextileStatus } from '../../models/textile';
 
 const maxTextileImages = 5;
 const maxImageSize = 5 * 1024 * 1024;
+const usdPerEur = 1.08;
+const cfaPerEur = 655.957;
 const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
 const emptyDraft: TextileDraft = {
   name: '',
   country: '',
   description: '',
   price: '',
+  priceUsd: '',
   status: 'available',
   featured: false,
 };
@@ -64,6 +69,9 @@ export class Dashboard implements OnInit, OnDestroy {
   protected readonly editingCountry = signal<Country | null>(null);
   protected readonly draft = signal<TextileDraft>({ ...emptyDraft });
   protected readonly countryDraft = signal<CountryDraft>({ name: '', flag: '' });
+  protected readonly countryFlagPreview = signal<string | null>(null);
+  private selectedCountryFlag: File | null = null;
+  private countryFlagObjectUrl: string | null = null;
   protected readonly currentImages = signal<TextileImage[]>([]);
   protected readonly selectedCoverImage = signal<File | null>(null);
   protected readonly selectedGalleryImages = signal<File[]>([]);
@@ -87,8 +95,6 @@ export class Dashboard implements OnInit, OnDestroy {
     const coverCount = this.selectedCoverImage() || this.currentImages().length > 0 ? 1 : 0;
     return coverCount + this.galleryImages().length + this.selectedGalleryImages().length;
   });
-  protected readonly detailImages = computed(() => this.selectedTextile()?.images ?? []);
-  protected readonly activeDetailImageIndex = signal(0);
   private coverObjectUrl: string | null = null;
   private galleryObjectUrls: string[] = [];
   private unsubscribeTextiles: Unsubscribe | null = null;
@@ -195,6 +201,7 @@ export class Dashboard implements OnInit, OnDestroy {
     this.unsubscribeTextiles?.();
     this.unsubscribeCountries?.();
     this.releaseImagePreviews();
+    if (this.countryFlagObjectUrl) URL.revokeObjectURL(this.countryFlagObjectUrl);
   }
 
   protected openCreateCountry(dialog: HTMLDialogElement): void {
@@ -206,6 +213,7 @@ export class Dashboard implements OnInit, OnDestroy {
     this.resetCountryForm();
     this.editingCountry.set(country);
     this.countryDraft.set({ name: country.name, flag: country.flag });
+    this.countryFlagPreview.set(country.flagUrl ?? null);
     dialog.showModal();
   }
 
@@ -218,12 +226,29 @@ export class Dashboard implements OnInit, OnDestroy {
   protected resetCountryForm(): void {
     this.editingCountry.set(null);
     this.countryDraft.set({ name: '', flag: '' });
+    this.selectedCountryFlag = null;
+    if (this.countryFlagObjectUrl) URL.revokeObjectURL(this.countryFlagObjectUrl);
+    this.countryFlagObjectUrl = null;
+    this.countryFlagPreview.set(null);
     this.countryFormError.set('');
   }
 
   protected updateCountryField(field: keyof CountryDraft, event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.countryDraft.update((draft) => ({ ...draft, [field]: value }));
+  }
+
+  protected selectCountryFlag(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 2 * 1024 * 1024) {
+      this.countryFormError.set('Choisis une image JPG, PNG ou WebP de 2 Mo maximum.');
+      return;
+    }
+    if (this.countryFlagObjectUrl) URL.revokeObjectURL(this.countryFlagObjectUrl);
+    this.selectedCountryFlag = file;
+    this.countryFlagObjectUrl = URL.createObjectURL(file);
+    this.countryFlagPreview.set(this.countryFlagObjectUrl);
   }
 
   protected countryTextileCount(country: Country): number {
@@ -239,17 +264,22 @@ export class Dashboard implements OnInit, OnDestroy {
     event.preventDefault();
     this.countryFormError.set('');
     const draft = this.countryDraft();
-    if (!draft.name.trim() || !draft.flag.trim()) {
-      this.countryFormError.set('Renseigne le nom du pays et son drapeau.');
+    if (!draft.name.trim() || (!this.editingCountry()?.flagUrl && !this.selectedCountryFlag)) {
+      this.countryFormError.set('Renseigne le nom du pays et ajoute son image de drapeau.');
       return;
     }
 
     this.isSavingCountry.set(true);
     try {
-      await this.countryCatalogue.saveCountry(
-        { name: draft.name.trim(), flag: draft.flag.trim() },
-        this.editingCountry()?.id,
-      );
+      const id = this.editingCountry()?.id;
+      let flagUrl = this.editingCountry()?.flagUrl ?? '';
+      if (this.selectedCountryFlag) {
+        const storage = getStorage(firebaseApp);
+        const imageRef = ref(storage, `countries/${id ?? crypto.randomUUID()}/flag-${Date.now()}`);
+        await uploadBytes(imageRef, this.selectedCountryFlag, { contentType: this.selectedCountryFlag.type });
+        flagUrl = await getDownloadURL(imageRef);
+      }
+      await this.countryCatalogue.saveCountry({ name: draft.name.trim(), flag: draft.flag, flagUrl }, id);
       this.notification.set(
         this.editingCountry() ? 'Pays modifié avec succès.' : 'Pays ajouté avec succès.',
       );
@@ -329,9 +359,18 @@ export class Dashboard implements OnInit, OnDestroy {
     this.selectedStatus.set((event.target as HTMLSelectElement).value);
   }
 
-  protected updateTextField(field: 'name' | 'country' | 'description' | 'price', event: Event): void {
+  protected updateTextField(field: 'name' | 'country' | 'description' | 'price' | 'priceUsd', event: Event): void {
     const value = (event.target as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement).value;
-    this.draft.update((draft) => ({ ...draft, [field]: value }));
+    this.draft.update((draft) => {
+      if (field === 'price') {
+        const cfa = Number(value.replace(/[\s.,]/g, ''));
+        const priceUsd = value.trim() && Number.isFinite(cfa) && cfa > 0
+          ? ((cfa / cfaPerEur) * usdPerEur).toFixed(2)
+          : '';
+        return { ...draft, price: value, priceUsd };
+      }
+      return { ...draft, [field]: value };
+    });
   }
 
   protected updateDraftStatus(event: Event): void {
@@ -466,6 +505,7 @@ export class Dashboard implements OnInit, OnDestroy {
       country: textile.country,
       description: textile.description,
       price: textile.price,
+      priceUsd: textile.priceUsd ?? '',
       status: textile.status,
       featured: textile.featured,
     });
@@ -508,6 +548,7 @@ export class Dashboard implements OnInit, OnDestroy {
       !draft.country ||
       !draft.description.trim() ||
       !draft.price.trim() ||
+      !draft.priceUsd.trim() ||
       (this.currentImages().length === 0 && !this.selectedCoverImage()) ||
       this.imageCount() < 2 ||
       this.imageCount() > maxTextileImages
