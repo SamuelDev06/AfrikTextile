@@ -1,6 +1,33 @@
 import { TestBed } from '@angular/core/testing';
 import { Home } from './home';
 import { TextileAnalyticsService } from '../catalogue/textile-analytics.service';
+import { TextileCatalogueService } from '../../firebase/textile-catalogue.service';
+import type { Textile } from '../../models/textile';
+
+const testTextiles: Textile[] = [
+  {
+    id: 'bogolan-test',
+    name: 'Bogolan de test',
+    country: 'Mali',
+    description: 'Un motif traditionnel',
+    price: '5 000 FCFA',
+    status: 'available',
+    imageUrl: '/img/bogolan-test.jpg',
+    imagePath: 'textiles/bogolan-test.jpg',
+    featured: true,
+  },
+  {
+    id: 'wax-test',
+    name: 'Wax de test',
+    country: "Côte d'Ivoire",
+    description: 'Un tissu coloré',
+    price: '3 000 FCFA',
+    status: 'low-stock',
+    imageUrl: '/img/wax-test.jpg',
+    imagePath: 'textiles/wax-test.jpg',
+    featured: false,
+  },
+];
 
 describe('Home', () => {
   beforeEach(async () => {
@@ -11,6 +38,15 @@ describe('Home', () => {
           provide: TextileAnalyticsService,
           useValue: {
             recordWhatsappClick: async () => undefined,
+          },
+        },
+        {
+          provide: TextileCatalogueService,
+          useValue: {
+            watchTextiles: (onChange: (textiles: Textile[]) => void) => {
+              onChange(testTextiles);
+              return () => undefined;
+            },
           },
         },
       ],

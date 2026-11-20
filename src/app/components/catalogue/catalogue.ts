@@ -6,32 +6,25 @@ import {
   input,
   NgZone,
   OnDestroy,
+  OnInit,
   output,
   signal,
   ViewChild,
 } from '@angular/core';
+import type { Unsubscribe } from 'firebase/firestore';
 import { TextileAnalyticsService } from './textile-analytics.service';
-
-type TextilePattern = 'wax' | 'bazin' | 'bogolan' | 'kente';
-
-interface Textile {
-  id: string;
-  name: string;
-  country: string;
-  type: string;
-  description: string;
-  pattern: TextilePattern;
-  featured: boolean;
-}
+import { TextileCatalogueService } from '../../firebase/textile-catalogue.service';
+import type { Textile, TextileStatus } from '../../models/textile';
 
 @Component({
   selector: 'app-catalogue',
   templateUrl: './catalogue.html',
   styleUrl: './catalogue.css',
 })
-export class Catalogue implements AfterViewInit, OnDestroy {
+export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private readonly textileAnalytics: TextileAnalyticsService,
+    private readonly catalogue: TextileCatalogueService,
     private readonly zone: NgZone,
   ) {}
 
@@ -40,50 +33,19 @@ export class Catalogue implements AfterViewInit, OnDestroy {
   @ViewChild('catalogueTrack') private catalogueTrack?: ElementRef<HTMLElement>;
   protected readonly searchTerm = signal('');
   protected readonly selectedTextile = signal<Textile | null>(null);
+  protected readonly textiles = signal<Textile[]>([]);
+  protected readonly isLoading = signal(true);
+  protected readonly dataError = signal('');
   protected readonly whatsappLink = 'https://wa.me/message/JKPDVMPZFGWSO1';
-
-  // Ces tissus alimentent les cartes et les filtres du catalogue.
-  protected readonly textiles: Textile[] = [
-    {
-      id: 'wax-royal',
-      name: 'Wax Royal',
-      country: "Côte d'Ivoire",
-      type: 'Wax',
-      description: 'Tissu traditionnel ivoirien',
-      pattern: 'wax',
-      featured: true,
-    },
-    {
-      id: 'bazin-prestige',
-      name: 'Bazin Prestige',
-      country: 'Sénégal',
-      type: 'Bazin',
-      description: 'Tissu sénégalais raffiné',
-      pattern: 'bazin',
-      featured: true,
-    },
-    {
-      id: 'bogolan-moderne',
-      name: 'Bogolan Moderne',
-      country: 'Mali',
-      type: 'Bogolan',
-      description: 'Tissu malien authentique',
-      pattern: 'bogolan',
-      featured: false,
-    },
-    {
-      id: 'kente-traditionnel',
-      name: 'Kente Traditionnel',
-      country: 'Ghana',
-      type: 'Kente',
-      description: 'Tissu ghanéen noble',
-      pattern: 'kente',
-      featured: true,
-    },
-  ];
-
-  // Cette sélection reste manuelle ; Analytics aide à voir les préférences.
-  protected readonly featuredTextiles = this.textiles.filter((textile) => textile.featured);
+  protected readonly featuredTextiles = computed(() =>
+    this.textiles().filter((textile) => textile.featured),
+  );
+  private readonly autoplayAllowed =
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  private autoplayInterval: number | null = null;
+  private unsubscribeTextiles: Unsubscribe | null = null;
 
   protected readonly countries = [
     "Côte d'Ivoire",
@@ -94,16 +56,15 @@ export class Catalogue implements AfterViewInit, OnDestroy {
     'Togo',
   ];
 
-  // Le pays choisi et la recherche déterminent les tissus affichés.
   protected readonly filteredTextiles = computed(() => {
     const country = this.selectedCountry();
     const search = this.searchTerm().trim().toLocaleLowerCase('fr');
 
-    return this.textiles.filter((textile) => {
+    return this.textiles().filter((textile) => {
       const matchesCountry = !country || textile.country === country;
       const matchesSearch =
         !search ||
-        `${textile.name} ${textile.country} ${textile.type}`
+        `${textile.name} ${textile.country} ${textile.description}`
           .toLocaleLowerCase('fr')
           .includes(search);
 
@@ -111,11 +72,22 @@ export class Catalogue implements AfterViewInit, OnDestroy {
     });
   });
 
-  private readonly autoplayAllowed =
-    typeof window !== 'undefined' &&
-    typeof window.matchMedia === 'function' &&
-    !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  private autoplayInterval: number | null = null;
+  ngOnInit(): void {
+    this.unsubscribeTextiles = this.catalogue.watchTextiles(
+      (textiles) =>
+        this.zone.run(() => {
+          this.textiles.set(textiles);
+          this.isLoading.set(false);
+          this.dataError.set('');
+        }),
+      (error) =>
+        this.zone.run(() => {
+          console.error('Impossible de charger le catalogue public.', error);
+          this.dataError.set('Le catalogue est momentanément indisponible.');
+          this.isLoading.set(false);
+        }),
+    );
+  }
 
   ngAfterViewInit(): void {
     this.startAutoplay();
@@ -123,6 +95,7 @@ export class Catalogue implements AfterViewInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopAutoplay();
+    this.unsubscribeTextiles?.();
   }
 
   protected updateSearch(event: Event): void {
@@ -171,7 +144,13 @@ export class Catalogue implements AfterViewInit, OnDestroy {
     }
   }
 
-  // Enregistre le clic avant d’ouvrir WhatsApp.
+  protected statusLabel(status: TextileStatus): string {
+    if (status === 'low-stock') {
+      return 'Stock faible';
+    }
+    return status === 'out-of-stock' ? 'Rupture de stock' : 'Disponible';
+  }
+
   protected async openWhatsapp(event: MouseEvent, textile: Textile): Promise<void> {
     const href = (event.currentTarget as HTMLAnchorElement).href;
     const opensNewTab = event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;

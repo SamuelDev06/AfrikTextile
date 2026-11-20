@@ -59,9 +59,12 @@
     </header>
 
     <main class="dashboard__content">
-      <p class="dashboard__demo-note">
-        Aperçu de démonstration : ces tissus ne sont pas encore enregistrés.
-      </p>
+      @if (notification()) {
+        <p class="dashboard__notification" role="status">{{ notification() }}</p>
+      }
+      @if (dataError()) {
+        <p class="dashboard__data-error" role="alert">{{ dataError() }}</p>
+      }
 
       <section class="dashboard__stats" aria-label="Résumé du catalogue">
         <article class="stat-card stat-card--fabric">
@@ -103,7 +106,7 @@
               <p>Les pays d’origine présents dans le catalogue</p>
             </div>
           </div>
-          <button class="dashboard__button" type="button" disabled title="Disponible dans une prochaine étape">
+          <button class="dashboard__button" type="button" disabled title="La gestion des pays sera ajoutée ensuite">
             <span aria-hidden="true">＋</span> Ajouter un pays
           </button>
         </div>
@@ -153,7 +156,7 @@
               <option value="low-stock">Stock faible</option>
               <option value="out-of-stock">Rupture de stock</option>
             </select>
-            <button class="dashboard__button" type="button" disabled title="Disponible dans une prochaine étape">
+            <button class="dashboard__button" type="button" (click)="openCreate(textileDialog)">
               <span aria-hidden="true">＋</span> Ajouter un tissu
             </button>
           </div>
@@ -169,33 +172,42 @@
                 <th scope="col">Description</th>
                 <th scope="col">Prix</th>
                 <th scope="col">Statut</th>
+                <th scope="col">Actions</th>
               </tr>
             </thead>
             <tbody>
-              @for (textile of filteredTextiles(); track textile.id) {
+              @if (isLoading()) {
+                <tr><td class="fabric-table__empty" colspan="7">Chargement du catalogue...</td></tr>
+              } @else if (filteredTextiles().length === 0) {
                 <tr>
-                  <td>
-                    <span
-                      class="fabric-swatch fabric-swatch--{{ textile.pattern }}"
-                      role="img"
-                      [attr.aria-label]="'Motif provisoire pour ' + textile.name"
-                    ></span>
-                  </td>
-                  <th scope="row">{{ textile.name }}</th>
-                  <td>{{ textile.country }}</td>
-                  <td>{{ textile.description }}</td>
-                  <td>{{ textile.price }}</td>
-                  <td>
-                    <span class="status-badge status-badge--{{ textile.status }}">
-                      <span aria-hidden="true"></span>
-                      {{ textile.status === 'available' ? 'Disponible' : textile.status === 'low-stock' ? 'Stock faible' : 'Rupture de stock' }}
-                    </span>
+                  <td class="fabric-table__empty" colspan="7">
+                    {{ textiles().length === 0 ? 'Aucun tissu pour le moment. Ajoute ton premier tissu.' : 'Aucun tissu ne correspond à ces filtres.' }}
                   </td>
                 </tr>
-              } @empty {
-                <tr>
-                  <td class="fabric-table__empty" colspan="6">Aucun tissu ne correspond à ces filtres.</td>
-                </tr>
+              } @else {
+                @for (textile of filteredTextiles(); track textile.id) {
+                  <tr>
+                    <td>
+                      <img class="fabric-swatch" [src]="textile.imageUrl" [alt]="'Photo de ' + textile.name" />
+                    </td>
+                    <th scope="row">{{ textile.name }}</th>
+                    <td>{{ textile.country }}</td>
+                    <td>{{ textile.description }}</td>
+                    <td>{{ textile.price }}</td>
+                    <td>
+                      <span class="status-badge status-badge--{{ textile.status }}">
+                        <span aria-hidden="true"></span>
+                        {{ textile.status === 'available' ? 'Disponible' : textile.status === 'low-stock' ? 'Stock faible' : 'Rupture de stock' }}
+                      </span>
+                    </td>
+                    <td>
+                      <div class="fabric-table__actions">
+                        <button type="button" (click)="openEdit(textile, textileDialog)">Modifier</button>
+                        <button type="button" (click)="deleteTextile(textile)">Supprimer</button>
+                      </div>
+                    </td>
+                  </tr>
+                }
               }
             </tbody>
           </table>
@@ -204,3 +216,125 @@
     </main>
   </div>
 </div>
+
+<dialog
+  #textileDialog
+  class="textile-form-dialog"
+  aria-labelledby="textile-form-title"
+  (close)="resetForm()"
+>
+  <form class="textile-form" (submit)="saveTextile($event, textileDialog)">
+    <header class="textile-form__header">
+      <div>
+        <p class="dashboard__eyebrow">Catalogue Afrik Textile</p>
+        <h2 id="textile-form-title">{{ editingTextile() ? 'Modifier le tissu' : 'Ajouter un tissu' }}</h2>
+      </div>
+      <button
+        class="textile-form__close"
+        type="button"
+        aria-label="Fermer le formulaire"
+        [disabled]="isSaving()"
+        (click)="closeForm(textileDialog)"
+      >
+        &times;
+      </button>
+    </header>
+
+    <label for="textile-name">Nom du tissu</label>
+    <input
+      id="textile-name"
+      type="text"
+      maxlength="100"
+      required
+      [value]="draft().name"
+      [disabled]="isSaving()"
+      (input)="updateTextField('name', $event)"
+    />
+
+    <label for="textile-country">Pays d’origine</label>
+    <select
+      id="textile-country"
+      required
+      [value]="draft().country"
+      [disabled]="isSaving()"
+      (change)="updateTextField('country', $event)"
+    >
+      <option value="" disabled>Choisir un pays</option>
+      @for (country of countries; track country.name) {
+        <option [value]="country.name">{{ country.name }}</option>
+      }
+    </select>
+
+    <label for="textile-description">Description</label>
+    <textarea
+      id="textile-description"
+      rows="3"
+      maxlength="500"
+      required
+      [value]="draft().description"
+      [disabled]="isSaving()"
+      (input)="updateTextField('description', $event)"
+    ></textarea>
+
+    <label for="textile-price">Prix</label>
+    <input
+      id="textile-price"
+      type="text"
+      maxlength="40"
+      placeholder="Ex. 5 000 FCFA"
+      required
+      [value]="draft().price"
+      [disabled]="isSaving()"
+      (input)="updateTextField('price', $event)"
+    />
+
+    <label for="textile-status">Statut</label>
+    <select
+      id="textile-status"
+      required
+      [value]="draft().status"
+      [disabled]="isSaving()"
+      (change)="updateDraftStatus($event)"
+    >
+      <option value="available">Disponible</option>
+      <option value="low-stock">Stock faible</option>
+      <option value="out-of-stock">Rupture de stock</option>
+    </select>
+
+    <label for="textile-image">Image du tissu (JPG, PNG ou WebP, 5 Mo max.)</label>
+    <input
+      id="textile-image"
+      type="file"
+      accept="image/jpeg,image/png,image/webp"
+      [required]="!editingTextile()"
+      [disabled]="isSaving()"
+      (change)="selectImage($event)"
+    />
+    @if (imagePreview()) {
+      <img class="textile-form__preview" [src]="imagePreview()" alt="Aperçu du tissu" />
+    }
+
+    <label class="textile-form__featured">
+      <input
+        type="checkbox"
+        [checked]="draft().featured"
+        [disabled]="isSaving()"
+        (change)="updateFeatured($event)"
+      />
+      Afficher dans la sélection du moment
+    </label>
+
+    @if (formError()) {
+      <p class="textile-form__error" role="alert">{{ formError() }}</p>
+    }
+
+    <div class="textile-form__actions">
+      <button class="textile-form__cancel" type="button" [disabled]="isSaving()" (click)="closeForm(textileDialog)">
+        Annuler
+      </button>
+      <button class="dashboard__button" type="submit" [disabled]="isSaving()">
+        {{ isSaving() ? 'Enregistrement...' : editingTextile() ? 'Enregistrer' : 'Ajouter le tissu' }}
+      </button>
+    </div>
+  </form>
+</dialog>

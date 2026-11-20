@@ -85,6 +85,11 @@
   margin: 0;
 }
 
+.selection-card__content .selection-card__price {
+  font-weight: 700;
+  margin-top: 0.45rem;
+}
+
 .selection-card__actions {
   display: flex;
   flex-wrap: wrap;
@@ -287,35 +292,20 @@
 .textile-card__image {
   align-items: flex-start;
   background-color: #9c4a12;
-  background-position: center;
-  background-size: cover;
   display: flex;
-  min-height: 9rem;
+  height: 11rem;
+  justify-content: space-between;
+  overflow: hidden;
   padding: 0.8rem;
+  position: relative;
 }
 
-.textile-card__image--wax {
-  background-image:
-    repeating-linear-gradient(45deg, transparent 0 12px, #f8a311 13px 18px, transparent 19px 28px),
-    repeating-linear-gradient(-45deg, #123f75 0 16px, #f3cb52 17px 21px, #a73d0d 22px 30px);
-}
-
-.textile-card__image--bazin {
-  background-image:
-    radial-gradient(circle at 30% 45%, #e2a72f 0 13%, transparent 14%),
-    repeating-linear-gradient(35deg, #642112 0 12px, #d96f1c 13px 17px, #34170e 18px 27px);
-}
-
-.textile-card__image--bogolan {
-  background-image:
-    repeating-linear-gradient(0deg, transparent 0 12px, #dca642 13px 16px, transparent 17px 25px),
-    repeating-linear-gradient(90deg, #172f36 0 14px, #f0e2b9 15px 19px, #315c66 20px 29px);
-}
-
-.textile-card__image--kente {
-  background-image:
-    repeating-linear-gradient(45deg, transparent 0 14px, #f4bf24 15px 20px, transparent 21px 30px),
-    repeating-linear-gradient(-45deg, #24733b 0 16px, #c82b16 17px 23px, #e99b16 24px 31px);
+.textile-card__photo {
+  height: 100%;
+  inset: 0;
+  object-fit: cover;
+  position: absolute;
+  width: 100%;
 }
 
 .textile-card__country {
@@ -325,6 +315,33 @@
   font-size: 0.8rem;
   font-weight: 700;
   padding: 0.35rem 0.7rem;
+  position: relative;
+  z-index: 1;
+}
+
+.textile-card__status {
+  align-self: flex-end;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.35rem 0.6rem;
+  position: relative;
+  z-index: 1;
+}
+
+.textile-card__status--available {
+  background: #d9f0cf;
+  color: #16803a;
+}
+
+.textile-card__status--low-stock {
+  background: #ffebbd;
+  color: #a64b08;
+}
+
+.textile-card__status--out-of-stock {
+  background: #ffd9d5;
+  color: #a51d1b;
 }
 
 .textile-card__content {
@@ -338,15 +355,15 @@
 }
 
 .textile-card__description,
-.textile-card__type {
+.textile-card__price {
   color: #71300e;
   font-size: 0.88rem;
   margin: 0;
 }
 
-.textile-card__type {
-  color: #875b3e;
-  margin-top: 0.55rem;
+.textile-card__price {
+  font-weight: 700;
+  margin-top: 0.45rem;
 }
 
 .textile-card__actions {
@@ -472,8 +489,11 @@
 }
 
 .textile-dialog__image {
+  display: block;
+  height: 14rem;
+  object-fit: cover;
   border-radius: 0.7rem;
-  min-height: 14rem;
+  width: 100%;
 }
 
 .textile-dialog__content h2 {
