@@ -5,8 +5,11 @@ import { AdminAuthService } from '../../firebase/admin-auth.service';
 import { CountryCatalogueService } from '../../firebase/country-catalogue.service';
 import { TextileCatalogueService } from '../../firebase/textile-catalogue.service';
 import type { Country, CountryDraft } from '../../models/country';
-import type { Textile, TextileDraft, TextileStatus } from '../../models/textile';
+import type { Textile, TextileDraft, TextileImage, TextileImagesDraft, TextileStatus } from '../../models/textile';
 
+const maxTextileImages = 5;
+const maxImageSize = 5 * 1024 * 1024;
+const allowedImageTypes = ['image/jpeg', 'image/png', 'image/webp'];
 const emptyDraft: TextileDraft = {
   name: '',
   country: '',
@@ -48,19 +51,43 @@ export class Dashboard implements OnInit, OnDestroy {
   protected readonly notification = signal('');
   protected readonly countryFormError = signal('');
   protected readonly formError = signal('');
+  protected readonly profilePhotoError = signal('');
   protected readonly isSaving = signal(false);
   protected readonly isSavingCountry = signal(false);
+  protected readonly isUploadingProfilePhoto = signal(false);
   protected readonly isLoadingCountries = signal(true);
+  protected readonly profilePhotoUrl = signal<string | null>(null);
   protected readonly editingTextile = signal<Textile | null>(null);
   protected readonly editingCountry = signal<Country | null>(null);
   protected readonly draft = signal<TextileDraft>({ ...emptyDraft });
   protected readonly countryDraft = signal<CountryDraft>({ name: '', flag: '' });
-  protected readonly selectedImage = signal<File | null>(null);
-  protected readonly imagePreviewUrl = signal<string | null>(null);
+  protected readonly currentImages = signal<TextileImage[]>([]);
+  protected readonly selectedCoverImage = signal<File | null>(null);
+  protected readonly selectedGalleryImages = signal<File[]>([]);
+  protected readonly coverPreviewUrl = signal<string | null>(null);
+  protected readonly galleryPreviewUrls = signal<string[]>([]);
+  protected readonly galleryImages = computed(() => {
+    const images = this.currentImages();
+    const coverFile = this.selectedCoverImage();
+    if (coverFile) {
+      const originalCoverPath = this.editingTextile()?.images[0]?.path;
+      return images
+        .map((image, index) => ({ image, index }))
+        .filter(({ image }) => !originalCoverPath || image.path !== originalCoverPath);
+    }
+    return images.slice(1).map((image, index) => ({ image, index: index + 1 }));
+  });
   protected readonly imagePreview = computed(
-    () => this.imagePreviewUrl() ?? this.editingTextile()?.imageUrl ?? '',
+    () => this.coverPreviewUrl() ?? this.currentImages()[0]?.url ?? '',
   );
-  private objectUrl: string | null = null;
+  protected readonly imageCount = computed(() => {
+    const coverCount = this.selectedCoverImage() || this.currentImages().length > 0 ? 1 : 0;
+    return coverCount + this.galleryImages().length + this.selectedGalleryImages().length;
+  });
+  protected readonly detailImages = computed(() => this.selectedTextile()?.images ?? []);
+  protected readonly activeDetailImageIndex = signal(0);
+  private coverObjectUrl: string | null = null;
+  private galleryObjectUrls: string[] = [];
   private unsubscribeTextiles: Unsubscribe | null = null;
   private unsubscribeCountries: Unsubscribe | null = null;
   protected readonly countries = signal<Country[]>([]);
@@ -103,6 +130,7 @@ export class Dashboard implements OnInit, OnDestroy {
   );
 
   ngOnInit(): void {
+    this.profilePhotoUrl.set(this.auth.currentUser?.photoURL ?? null);
     this.unsubscribeCountries = this.countryCatalogue.watchCountries(
       (countries) =>
         this.zone.run(() => {
@@ -136,7 +164,7 @@ export class Dashboard implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.unsubscribeTextiles?.();
     this.unsubscribeCountries?.();
-    this.releaseObjectUrl();
+    this.releaseImagePreviews();
   }
 
   protected openCreateCountry(dialog: HTMLDialogElement): void {
@@ -212,25 +240,38 @@ export class Dashboard implements OnInit, OnDestroy {
 
   protected async deleteCountry(country: Country): Promise<void> {
     const textileCount = this.countryTextileCount(country);
-    if (textileCount > 0) {
-      this.countryError.set('Ce pays est utilisé par un ou plusieurs tissus et ne peut pas être supprimé.');
-      return;
-    }
-    if (!window.confirm(`Supprimer « ${country.name} » de la liste des pays ?`)) {
+    const cascadeWarning =
+      textileCount > 0
+        ? ` Cette action supprimera aussi ${textileCount} tissu${textileCount > 1 ? 's' : ''} du catalogue et de toute sélection.`
+        : ' Les éventuels tissus associés seront également supprimés.';
+    if (!window.confirm(`Supprimer « ${country.name} » de la liste des pays ?${cascadeWarning}`)) {
       return;
     }
 
     this.countryError.set('');
     this.notification.set('');
+    let deletedTextileCount = 0;
     try {
+      const result = await this.catalogue.deleteTextilesByCountry(country.name);
+      deletedTextileCount = result.deletedCount;
       await this.countryCatalogue.deleteCountry(country);
-      this.notification.set('Pays supprimé avec succès.');
+      const textileMessage =
+        deletedTextileCount > 0
+          ? ` et ${deletedTextileCount} tissu${deletedTextileCount > 1 ? 's' : ''}`
+          : '';
+      this.notification.set(
+        result.imageCleanupWarning
+          ? `Pays${textileMessage} supprimé${deletedTextileCount > 0 ? 's' : ''}, mais certaines images n’ont pas pu être supprimées.`
+          : `Pays${textileMessage} supprimé${deletedTextileCount > 0 ? 's' : ''} du catalogue.`,
+      );
     } catch (error) {
       console.error('Impossible de supprimer le pays.', error);
       this.countryError.set(
         error instanceof Error && error.message === 'COUNTRY_IN_USE'
-          ? 'Ce pays est utilisé par un ou plusieurs tissus et ne peut pas être supprimé.'
-          : 'La suppression a échoué. Vérifie les règles Firestore et réessaie.',
+          ? 'Un tissu est encore associé à ce pays. Actualise le dashboard puis réessaie.'
+          : deletedTextileCount > 0
+            ? `${deletedTextileCount} tissu${deletedTextileCount > 1 ? 's ont' : ' a'} été supprimé${deletedTextileCount > 1 ? 's' : ''}, mais le pays n’a pas pu être supprimé. Réessaie.`
+            : 'La suppression a échoué. Vérifie les règles Firestore et réessaie.',
       );
     }
   }
@@ -277,7 +318,7 @@ export class Dashboard implements OnInit, OnDestroy {
     }));
   }
 
-  protected selectImage(event: Event): void {
+  protected selectCoverImage(event: Event): void {
     this.formError.set('');
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
@@ -285,16 +326,98 @@ export class Dashboard implements OnInit, OnDestroy {
       return;
     }
 
-    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+    if (!this.isValidImage(file)) {
       this.formError.set('Choisis une image JPG, PNG ou WebP de 5 Mo maximum.');
       input.value = '';
       return;
     }
 
-    this.selectedImage.set(file);
-    this.releaseObjectUrl();
-    this.objectUrl = URL.createObjectURL(file);
-    this.imagePreviewUrl.set(this.objectUrl);
+    this.selectedCoverImage.set(file);
+    this.releaseCoverPreview();
+    this.coverObjectUrl = URL.createObjectURL(file);
+    this.coverPreviewUrl.set(this.coverObjectUrl);
+  }
+
+  protected selectGalleryImages(event: Event): void {
+    this.formError.set('');
+    const input = event.target as HTMLInputElement;
+    const files = Array.from(input.files ?? []);
+    if (files.length === 0) {
+      return;
+    }
+
+    if (files.some((file) => !this.isValidImage(file))) {
+      this.formError.set('Choisis des images JPG, PNG ou WebP de 5 Mo maximum chacune.');
+      input.value = '';
+      return;
+    }
+    if (this.imageCount() + files.length > maxTextileImages) {
+      this.formError.set(`Un tissu peut contenir ${maxTextileImages} photos au maximum.`);
+      input.value = '';
+      return;
+    }
+
+    this.selectedGalleryImages.update((selected) => [...selected, ...files]);
+    this.galleryPreviewUrls.update((urls) => [
+      ...urls,
+      ...files.map((file) => {
+        const url = URL.createObjectURL(file);
+        this.galleryObjectUrls.push(url);
+        return url;
+      }),
+    ]);
+    input.value = '';
+  }
+
+  protected makeCoverImage(index: number): void {
+    this.currentImages.update((images) => {
+      const cover = images[index];
+      return cover ? [cover, ...images.filter((_, imageIndex) => imageIndex !== index)] : images;
+    });
+  }
+
+  protected removeSavedImage(index: number): void {
+    this.currentImages.update((images) => images.filter((_, imageIndex) => imageIndex !== index));
+  }
+
+  protected removeGalleryImage(index: number): void {
+    const objectUrl = this.galleryObjectUrls[index];
+    if (objectUrl) {
+      URL.revokeObjectURL(objectUrl);
+      this.galleryObjectUrls.splice(index, 1);
+    }
+    this.selectedGalleryImages.update((images) => images.filter((_, imageIndex) => imageIndex !== index));
+    this.galleryPreviewUrls.update((urls) => urls.filter((_, imageIndex) => imageIndex !== index));
+  }
+
+  protected async selectProfilePhoto(event: Event): Promise<void> {
+    this.profilePhotoError.set('');
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) {
+      return;
+    }
+
+    this.isUploadingProfilePhoto.set(true);
+    try {
+      const result = await this.auth.updateProfilePhoto(file);
+      this.profilePhotoUrl.set(result.url);
+      this.notification.set(
+        result.cleanupWarning
+          ? 'Photo de profil mise à jour, mais l’ancienne image n’a pas pu être supprimée.'
+          : 'Photo de profil mise à jour.',
+      );
+    } catch (error) {
+      console.error('Impossible de mettre à jour la photo de profil.', error);
+      this.profilePhotoError.set(
+        error instanceof Error && error.message === 'PROFILE_IMAGE_INVALID'
+          ? 'Choisis une image JPG, PNG ou WebP de 5 Mo maximum.'
+          : 'La photo n’a pas pu être enregistrée. Vérifie que Firebase Storage est activé et réessaie.',
+      );
+    } finally {
+      this.isUploadingProfilePhoto.set(false);
+    }
   }
 
   protected openCreate(dialog: HTMLDialogElement): void {
@@ -307,6 +430,7 @@ export class Dashboard implements OnInit, OnDestroy {
   protected openEdit(textile: Textile, dialog: HTMLDialogElement): void {
     this.resetForm();
     this.editingTextile.set(textile);
+    this.currentImages.set(textile.images);
     this.draft.set({
       name: textile.name,
       country: textile.country,
@@ -324,10 +448,19 @@ export class Dashboard implements OnInit, OnDestroy {
     }
   }
 
-  protected resetForm(): void {
-    this.releaseObjectUrl();
-    this.imagePreviewUrl.set(null);
-    this.selectedImage.set(null);
+  protected resetForm(coverInput?: HTMLInputElement, galleryInput?: HTMLInputElement): void {
+    this.releaseImagePreviews();
+    if (coverInput) {
+      coverInput.value = '';
+    }
+    if (galleryInput) {
+      galleryInput.value = '';
+    }
+    this.currentImages.set([]);
+    this.selectedCoverImage.set(null);
+    this.selectedGalleryImages.set([]);
+    this.coverPreviewUrl.set(null);
+    this.galleryPreviewUrls.set([]);
     this.editingTextile.set(null);
     this.draft.set({ ...emptyDraft });
     this.formError.set('');
@@ -345,9 +478,11 @@ export class Dashboard implements OnInit, OnDestroy {
       !draft.country ||
       !draft.description.trim() ||
       !draft.price.trim() ||
-      (!editingTextile && !this.selectedImage())
+      (this.currentImages().length === 0 && !this.selectedCoverImage()) ||
+      this.imageCount() < 2 ||
+      this.imageCount() > maxTextileImages
     ) {
-      this.formError.set('Renseigne tous les champs et ajoute une image pour le tissu.');
+      this.formError.set('Renseigne tous les champs et ajoute au moins 2 photos (5 maximum).');
       return;
     }
 
@@ -362,11 +497,17 @@ export class Dashboard implements OnInit, OnDestroy {
           price: draft.price.trim(),
         },
         editingTextile?.id,
-        this.selectedImage(),
+        {
+          coverFile: this.selectedCoverImage(),
+          galleryFiles: this.selectedGalleryImages(),
+          retainedImages: this.selectedCoverImage()
+            ? this.galleryImages().map(({ image }) => image)
+            : this.currentImages(),
+        } satisfies TextileImagesDraft,
       );
       this.notification.set(
         cleanupWarning
-          ? 'Tissu enregistré, mais l’ancienne image n’a pas pu être supprimée.'
+          ? 'Tissu enregistré, mais certaines anciennes photos n’ont pas pu être supprimées.'
           : editingTextile
             ? 'Tissu modifié avec succès.'
             : 'Tissu ajouté avec succès.',
@@ -374,11 +515,13 @@ export class Dashboard implements OnInit, OnDestroy {
       dialog.close();
     } catch (error) {
       console.error('Impossible d’enregistrer le tissu.', error);
-      this.formError.set(
-        error instanceof Error && error.message === 'IMAGE_INVALID'
-          ? 'Choisis une image JPG, PNG ou WebP de 5 Mo maximum.'
-          : 'Enregistrement impossible. Vérifie les règles Firestore et Storage, puis réessaie.',
-      );
+      if (error instanceof Error && error.message === 'IMAGE_INVALID') {
+        this.formError.set('Choisis des images JPG, PNG ou WebP de 5 Mo maximum chacune.');
+      } else if (error instanceof Error && error.message === 'IMAGE_COUNT_INVALID') {
+        this.formError.set('Ajoute au moins 2 photos et 5 au maximum.');
+      } else {
+        this.formError.set('Enregistrement impossible. Vérifie les règles Firestore et Storage, puis réessaie.');
+      }
     } finally {
       this.isSaving.set(false);
     }
@@ -394,7 +537,7 @@ export class Dashboard implements OnInit, OnDestroy {
       const cleanupWarning = await this.catalogue.deleteTextile(textile);
       this.notification.set(
         cleanupWarning
-          ? 'Tissu supprimé, mais son image n’a pas pu être supprimée.'
+          ? 'Tissu supprimé, mais certaines images n’ont pas pu être supprimées.'
           : 'Tissu supprimé du catalogue.',
       );
     } catch (error) {
@@ -417,10 +560,24 @@ export class Dashboard implements OnInit, OnDestroy {
     }
   }
 
-  private releaseObjectUrl(): void {
-    if (this.objectUrl) {
-      URL.revokeObjectURL(this.objectUrl);
-      this.objectUrl = null;
+  private isValidImage(file: File): boolean {
+    return allowedImageTypes.includes(file.type) && file.size <= maxImageSize;
+  }
+
+  private releaseCoverPreview(): void {
+    if (this.coverObjectUrl) {
+      URL.revokeObjectURL(this.coverObjectUrl);
+      this.coverObjectUrl = null;
     }
+    this.coverPreviewUrl.set(null);
+  }
+
+  private releaseImagePreviews(): void {
+    this.releaseCoverPreview();
+    for (const objectUrl of this.galleryObjectUrls) {
+      URL.revokeObjectURL(objectUrl);
+    }
+    this.galleryObjectUrls = [];
+    this.galleryPreviewUrls.set([]);
   }
 }

@@ -36,6 +36,7 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('catalogueTrack') private catalogueTrack?: ElementRef<HTMLElement>;
   protected readonly searchTerm = signal('');
   protected readonly selectedTextile = signal<Textile | null>(null);
+  protected readonly activeDetailImageIndex = signal(0);
   protected readonly textiles = signal<Textile[]>([]);
   protected readonly countries = signal<Country[]>([]);
   protected readonly isLoading = signal(true);
@@ -44,6 +45,7 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
   protected readonly featuredTextiles = computed(() =>
     this.textiles().filter((textile) => textile.featured),
   );
+  protected readonly detailImages = computed(() => this.selectedTextile()?.images ?? []);
   private readonly autoplayAllowed =
     typeof window !== 'undefined' &&
     typeof window.matchMedia === 'function' &&
@@ -179,7 +181,14 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
 
   protected showDetails(textile: Textile, dialog: HTMLDialogElement): void {
     this.selectedTextile.set(textile);
+    this.activeDetailImageIndex.set(0);
     dialog.showModal();
+  }
+
+  protected selectDetailImage(index: number): void {
+    if (index >= 0 && index < this.detailImages().length) {
+      this.activeDetailImageIndex.set(index);
+    }
   }
 
   protected closeDetails(dialog: HTMLDialogElement): void {
@@ -188,6 +197,7 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
 
   protected clearSelectedTextile(): void {
     this.selectedTextile.set(null);
+    this.activeDetailImageIndex.set(0);
   }
 
   private startAutoplay(): void {

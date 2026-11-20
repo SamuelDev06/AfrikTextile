@@ -21,6 +21,7 @@ const testTextiles: Textile[] = [
     status: 'available',
     imageUrl: '/img/bogolan-test.jpg',
     imagePath: 'textiles/bogolan-test.jpg',
+    images: [{ url: '/img/bogolan-test.jpg', path: 'textiles/bogolan-test.jpg' }],
     featured: true,
   },
   {
@@ -32,6 +33,7 @@ const testTextiles: Textile[] = [
     status: 'low-stock',
     imageUrl: '/img/wax-test.jpg',
     imagePath: 'textiles/wax-test.jpg',
+    images: [{ url: '/img/wax-test.jpg', path: 'textiles/wax-test.jpg' }],
     featured: false,
   },
 ];

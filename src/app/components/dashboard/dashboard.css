@@ -133,30 +133,91 @@
   text-transform: uppercase;
 }
 
-.dashboard__admin {
+.dashboard__account {
   align-items: center;
-  background: transparent;
-  border: 0;
-  color: var(--dashboard-brown);
-  cursor: pointer;
   display: inline-flex;
-  font: inherit;
-  font-weight: 700;
-  gap: 0.55rem;
-  padding: 0;
-  text-decoration: none;
+  flex: 0 0 auto;
+  gap: 0.65rem;
 }
 
-.dashboard__admin-avatar {
+.dashboard__profile-button {
   align-items: center;
   background: var(--dashboard-brown);
   border: 2px solid #f5b94c;
   border-radius: 50%;
-  color: white;
-  display: inline-flex;
-  height: 2.35rem;
+  color: var(--dashboard-brown);
+  cursor: pointer;
+  display: flex;
+  height: 2.4rem;
   justify-content: center;
-  width: 2.35rem;
+  overflow: hidden;
+  padding: 0;
+  position: relative;
+  width: 2.4rem;
+}
+
+.dashboard__profile-button span {
+  color: #fff;
+  font-weight: 700;
+}
+
+.dashboard__profile-button img {
+  height: 100%;
+  object-fit: cover;
+  width: 100%;
+}
+
+.dashboard__profile-button .dashboard__profile-edit {
+  align-items: center;
+  background: #f5b94c;
+  border: 1px solid #fffaf2;
+  border-radius: 50%;
+  bottom: -0.15rem;
+  color: #482010;
+  display: inline-flex;
+  font-size: 0.65rem;
+  height: 1rem;
+  justify-content: center;
+  position: absolute;
+  right: -0.15rem;
+  width: 1rem;
+}
+
+.dashboard__profile-button:focus-visible,
+.dashboard__logout:focus-visible {
+  outline: 3px solid #e99410;
+  outline-offset: 3px;
+}
+
+.dashboard__profile-button:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.dashboard__account-name {
+  color: var(--dashboard-brown);
+  font-weight: 700;
+}
+
+.dashboard__logout {
+  align-items: center;
+  background: #74300b;
+  border: 1px solid #74300b;
+  border-radius: 999px;
+  color: #fff;
+  cursor: pointer;
+  display: inline-flex;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  gap: 0.4rem;
+  min-height: 2.4rem;
+  padding: 0.5rem 0.8rem;
+  white-space: nowrap;
+}
+
+.dashboard__logout:hover {
+  background: #5e2509;
 }
 
 .dashboard__content {
@@ -501,8 +562,7 @@
 .dashboard__search:focus-within,
 .dashboard__filters select:focus-visible,
 .dashboard__menu-toggle:focus-visible,
-.dashboard__nav-link:focus-visible,
-.dashboard__admin:focus-visible {
+.dashboard__nav-link:focus-visible {
   outline: 3px solid #ef9b08;
   outline-offset: 3px;
 }
@@ -755,13 +815,66 @@
   width: 2.25rem;
 }
 
-.textile-form__preview {
+.textile-form__cover-preview {
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+}
+
+.textile-form__cover-preview img {
   background: #fff3e1;
   border: 1px solid #efdfcb;
   border-radius: 0.6rem;
-  height: 10rem;
-  object-fit: contain;
+  max-height: 12rem;
+  object-fit: cover;
   width: 100%;
+}
+
+.textile-form__cover-preview figcaption,
+.textile-form__hint {
+  color: #795a44;
+  font-size: 0.78rem;
+  margin: 0;
+}
+
+.textile-form__gallery {
+  display: grid;
+  gap: 0.6rem;
+  grid-template-columns: repeat(auto-fill, minmax(7rem, 1fr));
+}
+
+.textile-form__gallery-item {
+  background: #fff3e1;
+  border: 1px solid #efdfcb;
+  border-radius: 0.65rem;
+  display: grid;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.4rem;
+}
+
+.textile-form__gallery-item img {
+  aspect-ratio: 4 / 3;
+  border-radius: 0.4rem;
+  object-fit: cover;
+  width: 100%;
+}
+
+.textile-form__gallery-item button {
+  background: #fffaf2;
+  border: 1px solid #e8d2b9;
+  border-radius: 999px;
+  color: #55220d;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.35rem 0.45rem;
+}
+
+.textile-form__gallery-item button:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 .textile-form__featured {
@@ -909,15 +1022,28 @@
     font-size: 0.58rem;
   }
 
-  .dashboard__admin {
-    font-size: 0;
-    gap: 0;
+  .dashboard__heading {
+    min-width: 0;
   }
 
-  .dashboard__admin-avatar {
-    font-size: 0.9rem;
+  .dashboard__account {
+    gap: 0.35rem;
+  }
+
+  .dashboard__account-name {
+    display: none;
+  }
+
+  .dashboard__profile-button {
     height: 2.2rem;
     width: 2.2rem;
+  }
+
+  .dashboard__logout {
+    font-size: 0.68rem;
+    gap: 0.25rem;
+    min-height: 2.2rem;
+    padding: 0.4rem 0.55rem;
   }
 
   .dashboard__content {

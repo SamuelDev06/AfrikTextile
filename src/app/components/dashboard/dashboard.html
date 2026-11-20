@@ -51,11 +51,36 @@
         <h1>Tableau de bord</h1>
         <p>Bienvenue dans votre espace d’administration</p>
       </div>
-      <button class="dashboard__admin" type="button" aria-label="Se déconnecter" (click)="signOut()">
-        <span class="dashboard__admin-avatar" aria-hidden="true">A</span>
-        <span>Admin</span>
-        <span aria-hidden="true">↗</span>
-      </button>
+      <div class="dashboard__account">
+        <input
+          #profilePhotoInput
+          class="visually-hidden"
+          type="file"
+          accept="image/jpeg,image/png,image/webp"
+          [disabled]="isUploadingProfilePhoto()"
+          (change)="selectProfilePhoto($event)"
+        />
+        <button
+          class="dashboard__profile-button"
+          type="button"
+          aria-label="Modifier la photo de profil"
+          title="Modifier la photo de profil"
+          [disabled]="isUploadingProfilePhoto()"
+          (click)="profilePhotoInput.click()"
+        >
+          @if (profilePhotoUrl()) {
+            <img [src]="profilePhotoUrl()" alt="Photo de profil de l’administrateur" />
+          } @else {
+            <span aria-hidden="true">A</span>
+          }
+          <span class="dashboard__profile-edit" aria-hidden="true">✎</span>
+        </button>
+        <span class="dashboard__account-name">Admin</span>
+        <button class="dashboard__logout" type="button" (click)="signOut()">
+          <span aria-hidden="true">↗</span>
+          Se déconnecter
+        </button>
+      </div>
     </header>
 
     <main class="dashboard__content">
@@ -64,6 +89,9 @@
       }
       @if (dataError()) {
         <p class="dashboard__data-error" role="alert">{{ dataError() }}</p>
+      }
+      @if (profilePhotoError()) {
+        <p class="dashboard__data-error" role="alert">{{ profilePhotoError() }}</p>
       }
 
       <section class="dashboard__stats" aria-label="Résumé du catalogue">
@@ -135,11 +163,10 @@
                   <button type="button" (click)="openEditCountry(country, countryDialog)">Modifier</button>
                   <button
                     type="button"
-                    [disabled]="country.count > 0"
-                    [title]="country.count > 0 ? 'Ce pays est utilisé par des tissus' : 'Supprimer ce pays'"
+                    [title]="country.count > 0 ? 'Supprimer ce pays et ses tissus' : 'Supprimer ce pays'"
                     (click)="deleteCountry(country)"
                   >
-                    Supprimer
+                    Supprimer{{ country.count > 0 ? ' et tissus' : '' }}
                   </button>
                 </div>
               </article>
@@ -247,7 +274,7 @@
   #textileDialog
   class="textile-form-dialog"
   aria-labelledby="textile-form-title"
-  (close)="resetForm()"
+  (close)="resetForm(textileCoverInput, textileGalleryInput)"
 >
   <form class="textile-form" (submit)="saveTextile($event, textileDialog)">
     <header class="textile-form__header">
@@ -327,17 +354,63 @@
       <option value="out-of-stock">Rupture de stock</option>
     </select>
 
-    <label for="textile-image">Image du tissu (JPG, PNG ou WebP, 5 Mo max.)</label>
+    <label for="textile-cover">Photo de couverture (JPG, PNG ou WebP, 5 Mo max.)</label>
     <input
-      id="textile-image"
+      #textileCoverInput
+      id="textile-cover"
       type="file"
       accept="image/jpeg,image/png,image/webp"
-      [required]="!editingTextile()"
+      [required]="!editingTextile() || (currentImages().length === 0 && !selectedCoverImage())"
       [disabled]="isSaving()"
-      (change)="selectImage($event)"
+      (change)="selectCoverImage($event)"
     />
     @if (imagePreview()) {
-      <img class="textile-form__preview" [src]="imagePreview()" alt="Aperçu du tissu" />
+      <figure class="textile-form__cover-preview">
+        <img [src]="imagePreview()" alt="Aperçu de la photo de couverture" />
+        <figcaption>{{ selectedCoverImage() ? 'Nouvelle photo de couverture' : 'Photo de couverture' }}</figcaption>
+      </figure>
+    }
+
+    <label for="textile-gallery">Photos de galerie (JPG, PNG ou WebP, 5 Mo max. chacune)</label>
+    <input
+      #textileGalleryInput
+      id="textile-gallery"
+      type="file"
+      accept="image/jpeg,image/png,image/webp"
+      multiple
+      [disabled]="isSaving() || imageCount() >= 5"
+      (change)="selectGalleryImages($event)"
+    />
+    <p class="textile-form__hint">La première photo est celle de la carte. Les autres seront visibles dans les détails. {{ imageCount() }} / 5 photos.</p>
+
+    @if (galleryImages().length > 0 || galleryPreviewUrls().length > 0) {
+      <div class="textile-form__gallery" aria-label="Photos supplémentaires">
+        @for (entry of galleryImages(); track entry.image.path; let index = $index) {
+          <figure class="textile-form__gallery-item">
+            <img [src]="entry.image.url" [alt]="'Photo supplémentaire ' + (index + 1)" />
+            @if (!selectedCoverImage()) {
+              <button
+                type="button"
+                [disabled]="isSaving()"
+                (click)="makeCoverImage(entry.index)"
+              >
+                Définir en couverture
+              </button>
+            }
+            <button type="button" [disabled]="isSaving()" (click)="removeSavedImage(entry.index)">
+              Retirer
+            </button>
+          </figure>
+        }
+        @for (previewUrl of galleryPreviewUrls(); track previewUrl; let index = $index) {
+          <figure class="textile-form__gallery-item">
+            <img [src]="previewUrl" [alt]="'Nouvelle photo supplémentaire ' + (index + 1)" />
+            <button type="button" [disabled]="isSaving()" (click)="removeGalleryImage(index)">
+              Retirer
+            </button>
+          </figure>
+        }
+      </div>
     }
 
     <label class="textile-form__featured">

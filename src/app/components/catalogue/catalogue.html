@@ -308,7 +308,27 @@
         >
           &times;
         </button>
-        <img class="textile-dialog__image" [src]="textile.imageUrl" [alt]="'Photo de ' + textile.name" />
+        <img
+          class="textile-dialog__image"
+          [src]="detailImages()[activeDetailImageIndex()].url"
+          [alt]="'Photo ' + (activeDetailImageIndex() + 1) + ' de ' + textile.name"
+        />
+        @if (detailImages().length > 1) {
+          <div class="textile-dialog__thumbnails" role="group" aria-label="Autres photos du tissu">
+            @for (image of detailImages(); track image.path; let index = $index) {
+              <button
+                class="textile-dialog__thumbnail"
+                [class.textile-dialog__thumbnail--active]="activeDetailImageIndex() === index"
+                type="button"
+                [attr.aria-label]="'Afficher la photo ' + (index + 1)"
+                [attr.aria-current]="activeDetailImageIndex() === index ? 'true' : null"
+                (click)="selectDetailImage(index)"
+              >
+                <img [src]="image.url" [alt]="''" />
+              </button>
+            }
+          </div>
+        }
         <h2 id="textile-details-title">{{ textile.name }}</h2>
         <p>{{ textile.description }}</p>
         <dl class="textile-dialog__info">
