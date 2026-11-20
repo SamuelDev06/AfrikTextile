@@ -2,13 +2,10 @@ import { Component, computed, NgZone, OnDestroy, OnInit, signal } from '@angular
 import { Router, RouterLink } from '@angular/router';
 import type { Unsubscribe } from 'firebase/firestore';
 import { AdminAuthService } from '../../firebase/admin-auth.service';
+import { CountryCatalogueService } from '../../firebase/country-catalogue.service';
 import { TextileCatalogueService } from '../../firebase/textile-catalogue.service';
+import type { Country, CountryDraft } from '../../models/country';
 import type { Textile, TextileDraft, TextileStatus } from '../../models/textile';
-
-interface Country {
-  name: string;
-  flag: string;
-}
 
 const emptyDraft: TextileDraft = {
   name: '',
@@ -34,6 +31,7 @@ function isTextileStatus(value: string): value is TextileStatus {
 export class Dashboard implements OnInit, OnDestroy {
   constructor(
     private readonly auth: AdminAuthService,
+    private readonly countryCatalogue: CountryCatalogueService,
     private readonly catalogue: TextileCatalogueService,
     private readonly router: Router,
     private readonly zone: NgZone,
@@ -46,11 +44,17 @@ export class Dashboard implements OnInit, OnDestroy {
   protected readonly textiles = signal<Textile[]>([]);
   protected readonly isLoading = signal(true);
   protected readonly dataError = signal('');
+  protected readonly countryError = signal('');
   protected readonly notification = signal('');
+  protected readonly countryFormError = signal('');
   protected readonly formError = signal('');
   protected readonly isSaving = signal(false);
+  protected readonly isSavingCountry = signal(false);
+  protected readonly isLoadingCountries = signal(true);
   protected readonly editingTextile = signal<Textile | null>(null);
+  protected readonly editingCountry = signal<Country | null>(null);
   protected readonly draft = signal<TextileDraft>({ ...emptyDraft });
+  protected readonly countryDraft = signal<CountryDraft>({ name: '', flag: '' });
   protected readonly selectedImage = signal<File | null>(null);
   protected readonly imagePreviewUrl = signal<string | null>(null);
   protected readonly imagePreview = computed(
@@ -58,15 +62,8 @@ export class Dashboard implements OnInit, OnDestroy {
   );
   private objectUrl: string | null = null;
   private unsubscribeTextiles: Unsubscribe | null = null;
-
-  protected readonly countries: Country[] = [
-    { name: "Côte d'Ivoire", flag: '🇨🇮' },
-    { name: 'Sénégal', flag: '🇸🇳' },
-    { name: 'Mali', flag: '🇲🇱' },
-    { name: 'Ghana', flag: '🇬🇭' },
-    { name: 'Nigeria', flag: '🇳🇬' },
-    { name: 'Togo', flag: '🇹🇬' },
-  ];
+  private unsubscribeCountries: Unsubscribe | null = null;
+  protected readonly countries = signal<Country[]>([]);
 
   protected readonly stats = computed(() => {
     const textiles = this.textiles();
@@ -99,13 +96,27 @@ export class Dashboard implements OnInit, OnDestroy {
   });
 
   protected readonly countryCounts = computed(() =>
-    this.countries.map((country) => ({
+    this.countries().map((country) => ({
       ...country,
       count: this.textiles().filter((textile) => textile.country === country.name).length,
     })),
   );
 
   ngOnInit(): void {
+    this.unsubscribeCountries = this.countryCatalogue.watchCountries(
+      (countries) =>
+        this.zone.run(() => {
+          this.countries.set(countries);
+          this.isLoadingCountries.set(false);
+          this.countryError.set('');
+        }),
+      (error) =>
+        this.zone.run(() => {
+          console.error('Impossible de charger les pays dans le dashboard.', error);
+          this.countryError.set('Les pays n’ont pas pu être chargés. Vérifie la connexion à Firestore.');
+          this.isLoadingCountries.set(false);
+        }),
+    );
     this.unsubscribeTextiles = this.catalogue.watchTextiles(
       (textiles) =>
         this.zone.run(() => {
@@ -124,7 +135,115 @@ export class Dashboard implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.unsubscribeTextiles?.();
+    this.unsubscribeCountries?.();
     this.releaseObjectUrl();
+  }
+
+  protected openCreateCountry(dialog: HTMLDialogElement): void {
+    this.resetCountryForm();
+    dialog.showModal();
+  }
+
+  protected openEditCountry(country: Country, dialog: HTMLDialogElement): void {
+    this.resetCountryForm();
+    this.editingCountry.set(country);
+    this.countryDraft.set({ name: country.name, flag: country.flag });
+    dialog.showModal();
+  }
+
+  protected closeCountryForm(dialog: HTMLDialogElement): void {
+    if (!this.isSavingCountry()) {
+      dialog.close();
+    }
+  }
+
+  protected resetCountryForm(): void {
+    this.editingCountry.set(null);
+    this.countryDraft.set({ name: '', flag: '' });
+    this.countryFormError.set('');
+  }
+
+  protected updateCountryField(field: keyof CountryDraft, event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.countryDraft.update((draft) => ({ ...draft, [field]: value }));
+  }
+
+  protected countryTextileCount(country: Country): number {
+    return this.textiles().filter((textile) => textile.country === country.name).length;
+  }
+
+  protected countryNameLocked(): boolean {
+    const country = this.editingCountry();
+    return country !== null && this.countryTextileCount(country) > 0;
+  }
+
+  protected async saveCountry(event: SubmitEvent, dialog: HTMLDialogElement): Promise<void> {
+    event.preventDefault();
+    this.countryFormError.set('');
+    const draft = this.countryDraft();
+    if (!draft.name.trim() || !draft.flag.trim()) {
+      this.countryFormError.set('Renseigne le nom du pays et son drapeau.');
+      return;
+    }
+
+    this.isSavingCountry.set(true);
+    try {
+      await this.countryCatalogue.saveCountry(
+        { name: draft.name.trim(), flag: draft.flag.trim() },
+        this.editingCountry()?.id,
+      );
+      this.notification.set(
+        this.editingCountry() ? 'Pays modifié avec succès.' : 'Pays ajouté avec succès.',
+      );
+      dialog.close();
+    } catch (error) {
+      console.error('Impossible d’enregistrer le pays.', error);
+      if (error instanceof Error && error.message === 'COUNTRY_ALREADY_EXISTS') {
+        this.countryFormError.set('Ce pays est déjà présent dans la liste.');
+      } else if (error instanceof Error && error.message === 'COUNTRY_IN_USE') {
+        this.countryFormError.set('Le nom ne peut pas être modifié tant que des tissus utilisent ce pays.');
+      } else {
+        this.countryFormError.set('Enregistrement impossible. Vérifie les règles Firestore et réessaie.');
+      }
+    } finally {
+      this.isSavingCountry.set(false);
+    }
+  }
+
+  protected async deleteCountry(country: Country): Promise<void> {
+    const textileCount = this.countryTextileCount(country);
+    if (textileCount > 0) {
+      this.countryError.set('Ce pays est utilisé par un ou plusieurs tissus et ne peut pas être supprimé.');
+      return;
+    }
+    if (!window.confirm(`Supprimer « ${country.name} » de la liste des pays ?`)) {
+      return;
+    }
+
+    this.countryError.set('');
+    this.notification.set('');
+    try {
+      await this.countryCatalogue.deleteCountry(country);
+      this.notification.set('Pays supprimé avec succès.');
+    } catch (error) {
+      console.error('Impossible de supprimer le pays.', error);
+      this.countryError.set(
+        error instanceof Error && error.message === 'COUNTRY_IN_USE'
+          ? 'Ce pays est utilisé par un ou plusieurs tissus et ne peut pas être supprimé.'
+          : 'La suppression a échoué. Vérifie les règles Firestore et réessaie.',
+      );
+    }
+  }
+
+  protected async addInitialCountries(): Promise<void> {
+    this.countryError.set('');
+    try {
+      await this.countryCatalogue.addInitialCountries();
+      this.notification.set('La liste initiale des pays a été ajoutée.');
+    } catch (error) {
+      console.error('Impossible d’ajouter la liste initiale des pays.', error);
+      this.countryError.set('La liste a changé. Actualise les pays puis réessaie.');
+    }
   }
 
   protected updateSearch(event: Event): void {

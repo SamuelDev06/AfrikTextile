@@ -106,18 +106,44 @@
               <p>Les pays d’origine présents dans le catalogue</p>
             </div>
           </div>
-          <button class="dashboard__button" type="button" disabled title="La gestion des pays sera ajoutée ensuite">
+          <button class="dashboard__button" type="button" (click)="openCreateCountry(countryDialog)">
             <span aria-hidden="true">＋</span> Ajouter un pays
           </button>
         </div>
 
+        @if (countryError()) {
+          <p class="dashboard__data-error" role="alert">{{ countryError() }}</p>
+        }
+
         <div class="country-grid">
-          @for (country of countryCounts(); track country.name) {
-            <article class="country-card">
-              <span class="country-card__flag" aria-hidden="true">{{ country.flag }}</span>
-              <h3>{{ country.name }}</h3>
-              <p>{{ country.count }} tissu{{ country.count > 1 ? 's' : '' }}</p>
-            </article>
+          @if (isLoadingCountries()) {
+            <p class="country-grid__empty" role="status">Chargement des pays...</p>
+          } @else if (countryCounts().length === 0) {
+            <div class="country-grid__empty">
+              <p>Aucun pays n’est encore configuré.</p>
+              <button class="dashboard__button" type="button" (click)="addInitialCountries()">
+                Ajouter les 6 pays de départ
+              </button>
+            </div>
+          } @else {
+            @for (country of countryCounts(); track country.id) {
+              <article class="country-card">
+                <span class="country-card__flag" aria-hidden="true">{{ country.flag }}</span>
+                <h3>{{ country.name }}</h3>
+                <p>{{ country.count }} tissu{{ country.count > 1 ? 's' : '' }}</p>
+                <div class="country-card__actions">
+                  <button type="button" (click)="openEditCountry(country, countryDialog)">Modifier</button>
+                  <button
+                    type="button"
+                    [disabled]="country.count > 0"
+                    [title]="country.count > 0 ? 'Ce pays est utilisé par des tissus' : 'Supprimer ce pays'"
+                    (click)="deleteCountry(country)"
+                  >
+                    Supprimer
+                  </button>
+                </div>
+              </article>
+            }
           }
         </div>
       </section>
@@ -145,7 +171,7 @@
             <label class="visually-hidden" for="country-filter">Filtrer par pays</label>
             <select id="country-filter" (change)="updateCountry($event)">
               <option value="">Tous les pays</option>
-              @for (country of countries; track country.name) {
+              @for (country of countries(); track country.id) {
                 <option [value]="country.name">{{ country.name }}</option>
               }
             </select>
@@ -260,7 +286,7 @@
       (change)="updateTextField('country', $event)"
     >
       <option value="" disabled>Choisir un pays</option>
-      @for (country of countries; track country.name) {
+      @for (country of countries(); track country.id) {
         <option [value]="country.name">{{ country.name }}</option>
       }
     </select>
@@ -334,6 +360,70 @@
       </button>
       <button class="dashboard__button" type="submit" [disabled]="isSaving()">
         {{ isSaving() ? 'Enregistrement...' : editingTextile() ? 'Enregistrer' : 'Ajouter le tissu' }}
+      </button>
+    </div>
+  </form>
+</dialog>
+
+<dialog
+  #countryDialog
+  class="textile-form-dialog"
+  aria-labelledby="country-form-title"
+  (close)="resetCountryForm()"
+>
+  <form class="textile-form" (submit)="saveCountry($event, countryDialog)">
+    <header class="textile-form__header">
+      <div>
+        <p class="dashboard__eyebrow">Catalogue Afrik Textile</p>
+        <h2 id="country-form-title">{{ editingCountry() ? 'Modifier le pays' : 'Ajouter un pays' }}</h2>
+      </div>
+      <button
+        class="textile-form__close"
+        type="button"
+        aria-label="Fermer le formulaire"
+        [disabled]="isSavingCountry()"
+        (click)="closeCountryForm(countryDialog)"
+      >
+        &times;
+      </button>
+    </header>
+
+    <label for="country-name">Nom du pays</label>
+    <input
+      id="country-name"
+      type="text"
+      maxlength="60"
+      required
+      [value]="countryDraft().name"
+      [disabled]="isSavingCountry() || countryNameLocked()"
+      (input)="updateCountryField('name', $event)"
+    />
+    @if (countryNameLocked()) {
+      <p class="country-form__hint">Le nom ne peut pas être modifié tant que des tissus utilisent ce pays.</p>
+    }
+
+    <label for="country-flag">Drapeau (emoji)</label>
+    <input
+      id="country-flag"
+      type="text"
+      maxlength="8"
+      placeholder="Ex. 🇨🇮"
+      required
+      [value]="countryDraft().flag"
+      [disabled]="isSavingCountry()"
+      (input)="updateCountryField('flag', $event)"
+    />
+
+    @if (countryFormError()) {
+      <p class="textile-form__error" role="alert">{{ countryFormError() }}</p>
+    }
+
+    <div class="textile-form__actions">
+      <button class="textile-form__cancel" type="button" [disabled]="isSavingCountry()" (click)="closeCountryForm(countryDialog)">
+        Annuler
+      </button>
+      <button class="dashboard__button" type="submit" [disabled]="isSavingCountry()">
+        {{ isSavingCountry() ? 'Enregistrement...' : editingCountry() ? 'Enregistrer' : 'Ajouter le pays' }}
       </button>
     </div>
   </form>

@@ -12,8 +12,10 @@ import {
   ViewChild,
 } from '@angular/core';
 import type { Unsubscribe } from 'firebase/firestore';
+import { CountryCatalogueService } from '../../firebase/country-catalogue.service';
 import { TextileAnalyticsService } from './textile-analytics.service';
 import { TextileCatalogueService } from '../../firebase/textile-catalogue.service';
+import type { Country } from '../../models/country';
 import type { Textile, TextileStatus } from '../../models/textile';
 
 @Component({
@@ -25,6 +27,7 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private readonly textileAnalytics: TextileAnalyticsService,
     private readonly catalogue: TextileCatalogueService,
+    private readonly countryCatalogue: CountryCatalogueService,
     private readonly zone: NgZone,
   ) {}
 
@@ -34,6 +37,7 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
   protected readonly searchTerm = signal('');
   protected readonly selectedTextile = signal<Textile | null>(null);
   protected readonly textiles = signal<Textile[]>([]);
+  protected readonly countries = signal<Country[]>([]);
   protected readonly isLoading = signal(true);
   protected readonly dataError = signal('');
   protected readonly whatsappLink = 'https://wa.me/message/JKPDVMPZFGWSO1';
@@ -46,15 +50,7 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
     !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   private autoplayInterval: number | null = null;
   private unsubscribeTextiles: Unsubscribe | null = null;
-
-  protected readonly countries = [
-    "Côte d'Ivoire",
-    'Ghana',
-    'Mali',
-    'Nigeria',
-    'Sénégal',
-    'Togo',
-  ];
+  private unsubscribeCountries: Unsubscribe | null = null;
 
   protected readonly filteredTextiles = computed(() => {
     const country = this.selectedCountry();
@@ -73,6 +69,13 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    this.unsubscribeCountries = this.countryCatalogue.watchCountries(
+      (countries) =>
+        this.zone.run(() => {
+          this.countries.set(countries);
+        }),
+      (error) => console.error('Impossible de charger les pays dans le catalogue.', error),
+    );
     this.unsubscribeTextiles = this.catalogue.watchTextiles(
       (textiles) =>
         this.zone.run(() => {
@@ -96,6 +99,7 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.stopAutoplay();
     this.unsubscribeTextiles?.();
+    this.unsubscribeCountries?.();
   }
 
   protected updateSearch(event: Event): void {

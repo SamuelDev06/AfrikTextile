@@ -6,6 +6,10 @@
     </p>
   </div>
 
+  @if (countryError()) {
+    <p class="origins__error" role="alert">{{ countryError() }}</p>
+  }
+
   <ul class="origins__countries">
     <li>
       <app-country-pill
@@ -15,11 +19,11 @@
         (selected)="countrySelected.emit(null)"
       ></app-country-pill>
     </li>
-    @for (country of countries; track country.name) {
+    @for (country of countries(); track country.id) {
       <li>
         <app-country-pill
           [name]="country.name"
-          [description]="country.description"
+          [description]="country.flag"
           [active]="selectedCountry() === country.name"
           (selected)="countrySelected.emit($event)"
         ></app-country-pill>

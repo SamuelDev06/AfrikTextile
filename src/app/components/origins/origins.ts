@@ -1,10 +1,8 @@
-import { Component, input, output } from '@angular/core';
+import { Component, input, NgZone, OnDestroy, OnInit, output, signal } from '@angular/core';
+import type { Unsubscribe } from 'firebase/firestore';
+import { CountryCatalogueService } from '../../firebase/country-catalogue.service';
+import type { Country } from '../../models/country';
 import { CountryPill } from '../country-pill/country-pill';
-
-interface Country {
-  name: string;
-  description: string;
-}
 
 @Component({
   imports: [CountryPill],
@@ -12,17 +10,34 @@ interface Country {
   styleUrl: './origins.css',
   templateUrl: './origins.html',
 })
-export class Origins {
+export class Origins implements OnInit, OnDestroy {
+  constructor(
+    private readonly countryCatalogue: CountryCatalogueService,
+    private readonly zone: NgZone,
+  ) {}
+
   readonly selectedCountry = input<string | null>(null);
   readonly countrySelected = output<string | null>();
+  protected readonly countries = signal<Country[]>([]);
+  protected readonly countryError = signal('');
+  private unsubscribeCountries: Unsubscribe | null = null;
 
-  // Cette liste alimente les boutons de pays.
-  protected readonly countries: Country[] = [
-    { name: "Côte d'Ivoire", description: 'Drapeau ivoirien' },
-    { name: 'Ghana', description: 'Drapeau ghanéen' },
-    { name: 'Mali', description: 'Drapeau malien' },
-    { name: 'Nigeria', description: 'Drapeau nigérian' },
-    { name: 'Sénégal', description: 'Drapeau sénégalais' },
-    { name: 'Togo', description: 'Drapeau togolais' },
-  ];
+  ngOnInit(): void {
+    this.unsubscribeCountries = this.countryCatalogue.watchCountries(
+      (countries) =>
+        this.zone.run(() => {
+          this.countries.set(countries);
+          this.countryError.set('');
+        }),
+      (error) =>
+        this.zone.run(() => {
+          console.error('Impossible de charger les pays sur la vitrine.', error);
+          this.countryError.set('Les pays ne sont momentanément pas disponibles.');
+        }),
+    );
+  }
+
+  ngOnDestroy(): void {
+    this.unsubscribeCountries?.();
+  }
 }

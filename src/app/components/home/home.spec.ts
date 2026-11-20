@@ -1,8 +1,15 @@
 import { TestBed } from '@angular/core/testing';
 import { Home } from './home';
 import { TextileAnalyticsService } from '../catalogue/textile-analytics.service';
+import { CountryCatalogueService } from '../../firebase/country-catalogue.service';
 import { TextileCatalogueService } from '../../firebase/textile-catalogue.service';
+import type { Country } from '../../models/country';
 import type { Textile } from '../../models/textile';
+
+const testCountries: Country[] = [
+  { id: 'mali', name: 'Mali', flag: '🇲🇱' },
+  { id: 'cote-ivoire', name: "Côte d'Ivoire", flag: '🇨🇮' },
+];
 
 const testTextiles: Textile[] = [
   {
@@ -38,6 +45,15 @@ describe('Home', () => {
           provide: TextileAnalyticsService,
           useValue: {
             recordWhatsappClick: async () => undefined,
+          },
+        },
+        {
+          provide: CountryCatalogueService,
+          useValue: {
+            watchCountries: (onChange: (countries: Country[]) => void) => {
+              onChange(testCountries);
+              return () => undefined;
+            },
           },
         },
         {
@@ -81,6 +97,15 @@ describe('Home', () => {
     expect(compiled.querySelector('.hero-carousel__slide')?.getAttribute('aria-label')).toContain(
       '2 sur 3',
     );
+  });
+
+  it('should display the countries managed from the dashboard', async () => {
+    const fixture = TestBed.createComponent(Home);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+
+    expect(compiled.querySelector('.origins__countries')?.textContent).toContain('Mali');
+    expect(compiled.querySelector('.catalogue__country-filter')?.textContent).toContain("Côte d'Ivoire");
   });
 
   it('should display the brand slogan in the hero', async () => {
