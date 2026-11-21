@@ -103,6 +103,10 @@
   position: relative;
 }
 
+.hero__content { animation: soft-entrance 650ms cubic-bezier(0.2, 0.75, 0.25, 1) both; }
+.hero__visual { animation: soft-fade 900ms ease 120ms both; }
+.site-header { animation: soft-fade 450ms ease both; }
+
 .hero::before {
   background: linear-gradient(
     110deg,
