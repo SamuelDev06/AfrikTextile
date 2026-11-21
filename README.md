@@ -1,103 +1,78 @@
-Markdown
-
 # AfrikTextile
 
-Ce projet a été généré avec [Angular CLI](https://github.com/angular/angular-cli) version 22.2.1.
+**AfrikTextile** est une application web moderne conçue avec Angular pour valoriser, présenter et gérer des collections de textiles africains authentiques (pagnes tissés, wax, bogolan, kita, etc.). Ce projet met en avant le savoir-faire artisanal et offre une interface fluide et réactive aux utilisateurs.
 
-## Serveur de développement
+---
 
-Pour démarrer un serveur de développement local, exécutez :
+## Fonctionnalités principales
 
-```bash
-ng serve
+* **Catalogue interactif** : Exploration des différents tissus, motifs et origines artisanales.
+* **Interface moderne et responsive** : Navigation fluide adaptée aux ordinateurs, tablettes et mobiles.
+* **Architecture modulaire** : Construit avec **Angular CLI version 22.2.1** pour garantir performance, maintenabilité et évolutivité.
 
-Une fois le serveur lancé, ouvrez votre navigateur et rendez-vous sur http://localhost:4200/. L'application se rechargera automatiquement dès que vous modifierez l'un des fichiers sources.
+---
+
+## Prérequis
+
+Avant de lancer le projet localement, assurez-vous d'avoir installé :
+
+* [Node.js](https://nodejs.org/) (version LTS recommandée)
+* [Angular CLI](https://angular.dev/tools/cli) (`npm install -g @angular/cli`)
+
+---
+
+## Installation et démarrage
+
+1. **Cloner le dépôt** :
+   ```bash
+   git clone [https://github.com/SamuelDev06/AfrikTextile.git](https://github.com/SamuelDev06/AfrikTextile.git)
+   cd AfrikTextile
+
+   Installer les dépendances :
+    Bash
+
+    npm install
+
+    Lancer le serveur de développement :
+    Bash
+
+    ng serve
+
+    Ouvrez votre navigateur et rendez-vous sur http://localhost:4200/. L'application se rechargera automatiquement dès que vous modifierez l'un des fichiers sources.
+
+Commandes utiles
 Génération de code
 
-Angular CLI inclut des outils puissants pour générer du code. Pour créer un nouveau composant, exécutez :
+Angular CLI inclut des outils pour générer rapidement des éléments de l'application :
 Bash
 
 ng generate component nom-du-composant
 
-Pour obtenir la liste complète des schémas disponibles (comme components, directives ou pipes), exécutez :
+Pour afficher la liste complète des schémas disponibles (components, directives, pipes, etc.) :
 Bash
 
 ng generate --help
 
 Compilation (Build)
 
-Pour compiler le projet, exécutez :
+Pour compiler le projet en vue d'un déploiement en production :
 Bash
 
 ng build
 
-Cela compilera votre projet et enregistrera les fichiers générés dans le répertoire dist/. Par défaut, la compilation de production optimise votre application pour la performance et la rapidité.
-Exécution des tests unitaires
+Les fichiers optimisés seront générés dans le répertoire dist/.
+Exécution des tests
 
-Pour exécuter les tests unitaires avec le lanceur de tests Vitest, utilisez la commande suivante :
-Bash
+    Tests unitaires (avec Vitest) :
+    Bash
 
-ng test
+    ng test
 
-Exécution des tests de bout en bout (e2e)
+    Tests de bout en bout (e2e) :
+    Bash
 
-Pour les tests de bout en bout (e2e), exécutez :
-Bash
+    ng e2e
 
-ng e2e
-
-Angular CLI ne fournit pas de framework de tests de bout en bout par défaut. Vous pouvez choisir celui qui correspond le mieux à vos besoins.
 Ressources supplémentaires
 
-Pour plus d'informations sur l'utilisation d'Angular CLI, y compris les références détaillées des commandes, consultez la page Angular CLI Overview and Command Reference.**Markdown
-
-# AfrikTextile
-
-Ce projet a été généré avec [Angular CLI](https://github.com/angular/angular-cli) version 22.2.1.
-
-## Serveur de développement
-
-Pour démarrer un serveur de développement local, exécutez :
-
-```bash
-ng serve
-
-Une fois le serveur lancé, ouvrez votre navigateur et rendez-vous sur http://localhost:4200/. L'application se rechargera automatiquement dès que vous modifierez l'un des fichiers sources.
-Génération de code
-
-Angular CLI inclut des outils puissants pour générer du code. Pour créer un nouveau composant, exécutez :
-Bash
-
-ng generate component nom-du-composant
-
-Pour obtenir la liste complète des schémas disponibles (comme components, directives ou pipes), exécutez :
-Bash
-
-ng generate --help
-
-Compilation (Build)
-
-Pour compiler le projet, exécutez :
-Bash
-
-ng build
-
-Cela compilera votre projet et enregistrera les fichiers générés dans le répertoire dist/. Par défaut, la compilation de production optimise votre application pour la performance et la rapidité.
-Exécution des tests unitaires
-
-Pour exécuter les tests unitaires avec le lanceur de tests Vitest, utilisez la commande suivante :
-Bash
-
-ng test
-
-Exécution des tests de bout en bout (e2e)
-
-Pour les tests de bout en bout (e2e), exécutez :
-Bash
-
-ng e2e
-
-Angular CLI ne fournit pas de framework de tests de bout en bout par défaut. Vous pouvez choisir celui qui correspond le mieux à vos besoins.
-Ressources supplémentaires
-
-Pour plus d'informations sur l'utilisation d'Angular CLI, y compris les références détaillées des commandes, consultez la page Angular CLI Overview and Command Reference.**
+Pour plus d'informations sur l'utilisation d'Angular CLI, consultez la documentation officielle Angular CLI.
