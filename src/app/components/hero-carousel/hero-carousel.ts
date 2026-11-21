@@ -22,21 +22,21 @@ export class HeroCarousel implements OnInit, OnDestroy {
       title: 'Wax coloré',
       description: 'Motifs et couleurs éclatants du wax africain.',
       pattern: 'wax',
-      image: null,
+      image: '/img/hero1.jpg',
     },
     {
       id: 'bazin',
       title: 'Bazin brodé',
       description: 'Élégance et finesse du bazin brodé.',
       pattern: 'bazin',
-      image: null,
+      image: '/img/hero2.jpg',
     },
     {
       id: 'bogolan',
       title: 'Bogolan traditionnel',
       description: 'Motifs authentiques du bogolan malien.',
       pattern: 'bogolan',
-      image: null,
+      image: '/img/hero3.jpg',
     },
   ];
 
