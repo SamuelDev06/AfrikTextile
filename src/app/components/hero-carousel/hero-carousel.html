@@ -17,7 +17,13 @@
         [attr.aria-label]="(index + 1) + ' sur ' + slides.length + ' : ' + slide.title"
       >
         @if (slide.image) {
-          <img class="hero-carousel__image" [src]="slide.image" [alt]="slide.description" />
+          <img
+            class="hero-carousel__image"
+            [src]="slide.image"
+            [alt]="slide.description"
+            [attr.fetchpriority]="index === 0 ? 'high' : 'auto'"
+            decoding="async"
+          />
         } @else {
           <div
             [class]="'hero-carousel__pattern hero-carousel__pattern--' + slide.pattern"
@@ -25,7 +31,6 @@
             [attr.aria-label]="slide.description"
           ></div>
         }
-        <p class="hero-carousel__caption">{{ slide.title }}</p>
       </div>
     }
   }

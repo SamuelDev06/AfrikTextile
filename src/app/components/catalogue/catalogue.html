@@ -5,17 +5,18 @@
   </div>
 
   <div class="selection__carousel">
+    @if (featuredTextiles().length > 1) {
     <button
       class="catalogue__carousel-button catalogue__carousel-button--previous"
       type="button"
       aria-label="Revenir aux tissus précédents"
-      [disabled]="featuredTextiles().length <= 1"
       (click)="moveCarousel(selectionTrack, -1)"
     >
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <path d="m15 18-6-6 6-6" />
       </svg>
     </button>
+    }
 
     <div
       #selectionTrack
@@ -32,7 +33,7 @@
         @for (textile of featuredTextiles(); track textile.id) {
           <article class="selection-card">
             <div class="textile-card__image">
-              <img class="textile-card__photo" [src]="textile.imageUrl" [alt]="'Photo de ' + textile.name" />
+              <img class="textile-card__photo" [src]="textile.imageUrl" [alt]="'Photo de ' + textile.name" loading="lazy" decoding="async" />
               <span class="textile-card__country">À découvrir</span>
               <span class="textile-card__status textile-card__status--{{ textile.status }}">
                 {{ statusLabel(textile.status) }}
@@ -91,17 +92,18 @@
         }
       }
     </div>
+    @if (featuredTextiles().length > 1) {
     <button
       class="catalogue__carousel-button catalogue__carousel-button--next"
       type="button"
       aria-label="Avancer vers les tissus suivants"
-      [disabled]="featuredTextiles().length <= 1"
       (click)="moveCarousel(selectionTrack, 1)"
     >
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
         <path d="m9 18 6-6-6-6" />
       </svg>
     </button>
+    }
   </div>
 </section>
 
@@ -131,7 +133,7 @@
         </svg>
         <span class="visually-hidden">Rechercher un tissu</span>
         <input
-          type="search"
+          type="text"
           placeholder="Rechercher un tissu..."
           [value]="searchTerm()"
           (input)="updateSearch($event)"
@@ -195,7 +197,7 @@
       @for (textile of filteredTextiles(); track textile.name) {
         <article class="textile-card">
           <div class="textile-card__image">
-            <img class="textile-card__photo" [src]="textile.imageUrl" [alt]="'Photo de ' + textile.name" />
+            <img class="textile-card__photo" [src]="textile.imageUrl" [alt]="'Photo de ' + textile.name" loading="lazy" decoding="async" />
             <span class="textile-card__country">{{ textile.country }}</span>
             <span class="textile-card__status textile-card__status--{{ textile.status }}">
               {{ statusLabel(textile.status) }}
@@ -312,6 +314,7 @@
           class="textile-dialog__image"
           [src]="detailImages()[activeDetailImageIndex()].url"
           [alt]="'Photo ' + (activeDetailImageIndex() + 1) + ' de ' + textile.name"
+          decoding="async"
         />
         @if (detailImages().length > 1) {
           <div class="textile-dialog__thumbnails" role="group" aria-label="Autres photos du tissu">

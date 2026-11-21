@@ -3,6 +3,18 @@
   min-height: 20rem;
 }
 
+@keyframes hero-image-approach {
+  from {
+    opacity: 0.55;
+    transform: scale(0.78);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1.08);
+  }
+}
+
 .hero-carousel {
   background: #482010;
   border: 0;
@@ -30,7 +42,9 @@
 }
 
 .hero-carousel__image {
+  animation: hero-image-approach 5s cubic-bezier(0.16, 0.7, 0.25, 1) both;
   object-fit: cover;
+  transform-origin: center;
 }
 
 .hero-carousel__pattern--wax {
@@ -58,19 +72,6 @@
   inset: 0;
   pointer-events: none;
   position: absolute;
-}
-
-.hero-carousel__caption {
-  bottom: 1.2rem;
-  color: #fffaf2;
-  font-family: var(--font-family-display);
-  font-size: 1.05rem;
-  font-weight: 700;
-  left: 1.25rem;
-  margin: 0;
-  position: absolute;
-  right: 5.5rem;
-  z-index: 1;
 }
 
 .hero-carousel__indicators {

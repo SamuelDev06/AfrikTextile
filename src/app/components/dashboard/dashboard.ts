@@ -47,7 +47,6 @@ export class Dashboard implements OnInit, OnDestroy {
     private readonly zone: NgZone,
   ) {}
 
-  protected readonly sidebarOpen = signal(false);
   protected readonly activeSection = signal<'overview' | 'textiles' | 'countries'>('overview');
   protected readonly searchTerm = signal('');
   protected readonly selectedCountry = signal('');
@@ -163,7 +162,6 @@ export class Dashboard implements OnInit, OnDestroy {
     this.routeDataSubscription = this.route.data.subscribe((data) => {
       const section = data['section'];
       this.activeSection.set(section === 'textiles' || section === 'countries' ? section : 'overview');
-      this.sidebarOpen.set(false);
     });
     this.profilePhotoUrl.set(this.auth.currentUser?.photoURL ?? null);
     this.unsubscribeCountries = this.countryCatalogue.watchCountries(
@@ -615,10 +613,6 @@ export class Dashboard implements OnInit, OnDestroy {
       console.error('Impossible de supprimer le tissu.', error);
       this.dataError.set('La suppression a échoué. Vérifie les règles Firestore et réessaie.');
     }
-  }
-
-  protected closeSidebar(): void {
-    this.sidebarOpen.set(false);
   }
 
   protected async signOut(): Promise<void> {
