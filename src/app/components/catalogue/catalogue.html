@@ -314,6 +314,7 @@
           class="textile-dialog__image"
           [src]="detailImages()[activeDetailImageIndex()].url"
           [alt]="'Photo ' + (activeDetailImageIndex() + 1) + ' de ' + textile.name"
+          loading="lazy"
           decoding="async"
         />
         @if (detailImages().length > 1) {
@@ -327,7 +328,7 @@
                 [attr.aria-current]="activeDetailImageIndex() === index ? 'true' : null"
                 (click)="selectDetailImage(index)"
               >
-                <img [src]="image.url" [alt]="''" />
+                <img [src]="image.url" [alt]="''" loading="lazy" decoding="async" />
               </button>
             }
           </div>

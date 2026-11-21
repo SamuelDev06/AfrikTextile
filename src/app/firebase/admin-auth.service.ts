@@ -4,6 +4,7 @@ import { deleteObject, getDownloadURL, getStorage, ref, uploadBytes } from 'fire
 import { doc, getDoc, getFirestore } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import { firebaseApp } from './firebase-app';
+import { compressImage } from '../utils/compress-image';
 
 const maxProfilePhotoSize = 5 * 1024 * 1024;
 const allowedProfilePhotoTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -59,10 +60,11 @@ export class AdminAuthService {
     }
 
     const previousPhotoUrl = user.photoURL;
-    const safeName = file.name.replace(/[^\w.-]/g, '_');
+    const compressedFile = await compressImage(file, 1024);
+    const safeName = compressedFile.name.replace(/[^\w.-]/g, '_');
     const imagePath = `admins/${user.uid}/profile/${Date.now()}-${safeName}`;
     const imageRef = ref(this.storage, imagePath);
-    await uploadBytes(imageRef, file, { contentType: file.type });
+    await uploadBytes(imageRef, compressedFile, { contentType: compressedFile.type });
 
     let url: string;
     try {

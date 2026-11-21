@@ -6,6 +6,7 @@ import { deleteObject, getDownloadURL, getStorage, ref, uploadBytes } from 'fire
 import { AdminAuthService } from '../../firebase/admin-auth.service';
 import { CountryCatalogueService } from '../../firebase/country-catalogue.service';
 import { TextileCatalogueService } from '../../firebase/textile-catalogue.service';
+import { compressImage } from '../../utils/compress-image';
 import type { Country, CountryDraft } from '../../models/country';
 import { firebaseApp } from '../../firebase/firebase-app';
 import type { Textile, TextileDraft, TextileImage, TextileImagesDraft, TextileStatus } from '../../models/textile';
@@ -272,9 +273,10 @@ export class Dashboard implements OnInit, OnDestroy {
       const id = this.editingCountry()?.id;
       let flagUrl = this.editingCountry()?.flagUrl ?? '';
       if (this.selectedCountryFlag) {
+        const compressedFlag = await compressImage(this.selectedCountryFlag, 640);
         const storage = getStorage(firebaseApp);
         const imageRef = ref(storage, `countries/${id ?? crypto.randomUUID()}/flag-${Date.now()}`);
-        await uploadBytes(imageRef, this.selectedCountryFlag, { contentType: this.selectedCountryFlag.type });
+        await uploadBytes(imageRef, compressedFlag, { contentType: compressedFlag.type });
         flagUrl = await getDownloadURL(imageRef);
       }
       await this.countryCatalogue.saveCountry({ name: draft.name.trim(), flag: draft.flag, flagUrl }, id);
@@ -288,6 +290,8 @@ export class Dashboard implements OnInit, OnDestroy {
         this.countryFormError.set('Ce pays est déjà présent dans la liste.');
       } else if (error instanceof Error && error.message === 'COUNTRY_IN_USE') {
         this.countryFormError.set('Le nom ne peut pas être modifié tant que des tissus utilisent ce pays.');
+      } else if (error instanceof Error && error.message === 'IMAGE_PROCESSING_FAILED') {
+        this.countryFormError.set('Le drapeau n’a pas pu être optimisé. Essaie avec une autre image.');
       } else {
         this.countryFormError.set('Enregistrement impossible. Vérifie les règles Firestore et réessaie.');
       }
@@ -480,6 +484,8 @@ export class Dashboard implements OnInit, OnDestroy {
       this.profilePhotoError.set(
         error instanceof Error && error.message === 'PROFILE_IMAGE_INVALID'
           ? 'Choisis une image JPG, PNG ou WebP de 5 Mo maximum.'
+          : error instanceof Error && error.message === 'IMAGE_PROCESSING_FAILED'
+            ? 'La photo n’a pas pu être optimisée. Essaie avec une autre image.'
           : 'La photo n’a pas pu être enregistrée. Vérifie que Firebase Storage est activé et réessaie.',
       );
     } finally {
@@ -586,6 +592,8 @@ export class Dashboard implements OnInit, OnDestroy {
       console.error('Impossible d’enregistrer le tissu.', error);
       if (error instanceof Error && error.message === 'IMAGE_INVALID') {
         this.formError.set('Choisis des images JPG, PNG ou WebP de 5 Mo maximum chacune.');
+      } else if (error instanceof Error && error.message === 'IMAGE_PROCESSING_FAILED') {
+        this.formError.set('Une photo n’a pas pu être optimisée. Essaie avec une autre image.');
       } else if (error instanceof Error && error.message === 'IMAGE_COUNT_INVALID') {
         this.formError.set('Ajoute au moins 2 photos et 5 au maximum.');
       } else {

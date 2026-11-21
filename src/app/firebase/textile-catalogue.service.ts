@@ -16,6 +16,7 @@ import {
 import type { DocumentData, Unsubscribe } from 'firebase/firestore';
 import { deleteObject, getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
 import type { Textile, TextileDraft, TextileImage, TextileImagesDraft, TextileStatus } from '../models/textile';
+import { compressImage } from '../utils/compress-image';
 import { firebaseApp } from './firebase-app';
 
 const allowedStatuses: TextileStatus[] = ['available', 'low-stock', 'out-of-stock'];
@@ -274,10 +275,11 @@ export class TextileCatalogueService {
     index: number,
     uploadedPaths: Set<string>,
   ): Promise<TextileImage> {
-    const safeName = file.name.replace(/[^\w.-]/g, '_');
+    const compressedFile = await compressImage(file);
+    const safeName = compressedFile.name.replace(/[^\w.-]/g, '_');
     const imagePath = `textiles/${textileId}/${Date.now()}-${index}-${safeName}`;
     const imageRef = ref(this.storage, imagePath);
-    await uploadBytes(imageRef, file, { contentType: file.type });
+    await uploadBytes(imageRef, compressedFile, { contentType: compressedFile.type });
     uploadedPaths.add(imagePath);
     return { url: await getDownloadURL(imageRef), path: imagePath };
   }

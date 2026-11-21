@@ -177,7 +177,7 @@
             @for (country of countryCounts(); track country.id) {
               <article class="country-card">
                 @if (country.flagUrl) {
-                  <img class="country-card__flag-image" [src]="country.flagUrl" [alt]="'Drapeau de ' + country.name" />
+                  <img class="country-card__flag-image" [src]="country.flagUrl" [alt]="'Drapeau de ' + country.name" loading="lazy" decoding="async" />
                 } @else {
                   <span class="country-card__flag" aria-hidden="true">{{ country.flag }}</span>
                 }
@@ -279,7 +279,7 @@
                 @for (textile of filteredTextiles(); track textile.id) {
                   <tr>
                     <td>
-                      <img class="fabric-swatch" [src]="textile.imageUrl" [alt]="'Photo de ' + textile.name" />
+                      <img class="fabric-swatch" [src]="textile.imageUrl" [alt]="'Photo de ' + textile.name" loading="lazy" decoding="async" />
                     </td>
                     <th scope="row">{{ textile.name }}</th>
                     <td>{{ textile.country }}</td>
