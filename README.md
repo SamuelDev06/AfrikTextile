@@ -1,59 +1,103 @@
+Markdown
+
 # AfrikTextile
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.1.
+Ce projet a été généré avec [Angular CLI](https://github.com/angular/angular-cli) version 22.2.1.
 
-## Development server
+## Serveur de développement
 
-To start a local development server, run:
+Pour démarrer un serveur de développement local, exécutez :
 
 ```bash
 ng serve
-```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Une fois le serveur lancé, ouvrez votre navigateur et rendez-vous sur http://localhost:4200/. L'application se rechargera automatiquement dès que vous modifierez l'un des fichiers sources.
+Génération de code
 
-## Code scaffolding
+Angular CLI inclut des outils puissants pour générer du code. Pour créer un nouveau composant, exécutez :
+Bash
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+ng generate component nom-du-composant
 
-```bash
-ng generate component component-name
-```
+Pour obtenir la liste complète des schémas disponibles (comme components, directives ou pipes), exécutez :
+Bash
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
 ng generate --help
-```
 
-## Building
+Compilation (Build)
 
-To build the project run:
+Pour compiler le projet, exécutez :
+Bash
 
-```bash
 ng build
-```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Cela compilera votre projet et enregistrera les fichiers générés dans le répertoire dist/. Par défaut, la compilation de production optimise votre application pour la performance et la rapidité.
+Exécution des tests unitaires
 
-## Running unit tests
+Pour exécuter les tests unitaires avec le lanceur de tests Vitest, utilisez la commande suivante :
+Bash
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
 ng test
-```
 
-## Running end-to-end tests
+Exécution des tests de bout en bout (e2e)
 
-For end-to-end (e2e) testing, run:
+Pour les tests de bout en bout (e2e), exécutez :
+Bash
+
+ng e2e
+
+Angular CLI ne fournit pas de framework de tests de bout en bout par défaut. Vous pouvez choisir celui qui correspond le mieux à vos besoins.
+Ressources supplémentaires
+
+Pour plus d'informations sur l'utilisation d'Angular CLI, y compris les références détaillées des commandes, consultez la page Angular CLI Overview and Command Reference.**Markdown
+
+# AfrikTextile
+
+Ce projet a été généré avec [Angular CLI](https://github.com/angular/angular-cli) version 22.2.1.
+
+## Serveur de développement
+
+Pour démarrer un serveur de développement local, exécutez :
 
 ```bash
+ng serve
+
+Une fois le serveur lancé, ouvrez votre navigateur et rendez-vous sur http://localhost:4200/. L'application se rechargera automatiquement dès que vous modifierez l'un des fichiers sources.
+Génération de code
+
+Angular CLI inclut des outils puissants pour générer du code. Pour créer un nouveau composant, exécutez :
+Bash
+
+ng generate component nom-du-composant
+
+Pour obtenir la liste complète des schémas disponibles (comme components, directives ou pipes), exécutez :
+Bash
+
+ng generate --help
+
+Compilation (Build)
+
+Pour compiler le projet, exécutez :
+Bash
+
+ng build
+
+Cela compilera votre projet et enregistrera les fichiers générés dans le répertoire dist/. Par défaut, la compilation de production optimise votre application pour la performance et la rapidité.
+Exécution des tests unitaires
+
+Pour exécuter les tests unitaires avec le lanceur de tests Vitest, utilisez la commande suivante :
+Bash
+
+ng test
+
+Exécution des tests de bout en bout (e2e)
+
+Pour les tests de bout en bout (e2e), exécutez :
+Bash
+
 ng e2e
-```
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Angular CLI ne fournit pas de framework de tests de bout en bout par défaut. Vous pouvez choisir celui qui correspond le mieux à vos besoins.
+Ressources supplémentaires
 
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+Pour plus d'informations sur l'utilisation d'Angular CLI, y compris les références détaillées des commandes, consultez la page Angular CLI Overview and Command Reference.**
