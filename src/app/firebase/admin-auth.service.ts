@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
-import { deleteObject, getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
 import { doc, getDoc, getFirestore } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 import { firebaseApp } from './firebase-app';
 import { compressImage } from '../utils/compress-image';
+import { BlobStorageService } from './blob-storage.service';
 
 const maxProfilePhotoSize = 5 * 1024 * 1024;
 const allowedProfilePhotoTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -13,7 +13,7 @@ const allowedProfilePhotoTypes = ['image/jpeg', 'image/png', 'image/webp'];
 export class AdminAuthService {
   private readonly auth = getAuth(firebaseApp);
   private readonly firestore = getFirestore(firebaseApp);
-  private readonly storage = getStorage(firebaseApp);
+  constructor(private readonly blobStorage: BlobStorageService) {}
 
   get currentUser(): User | null {
     return this.auth.currentUser;
@@ -61,31 +61,21 @@ export class AdminAuthService {
 
     const previousPhotoUrl = user.photoURL;
     const compressedFile = await compressImage(file, 1024);
-    const safeName = compressedFile.name.replace(/[^\w.-]/g, '_');
-    const imagePath = `admins/${user.uid}/profile/${Date.now()}-${safeName}`;
-    const imageRef = ref(this.storage, imagePath);
-    await uploadBytes(imageRef, compressedFile, { contentType: compressedFile.type });
-
     let url: string;
     try {
-      url = await getDownloadURL(imageRef);
+      const uploaded = await this.blobStorage.upload(compressedFile, `admins/${user.uid}/profile/${Date.now()}-${compressedFile.name}`);
+      url = uploaded.url;
       await updateProfile(user, { photoURL: url });
     } catch (error) {
-      try {
-        await deleteObject(imageRef);
-      } catch (cleanupError) {
-        console.error('Impossible de nettoyer la nouvelle photo de profil après un échec.', cleanupError);
-      }
       throw error;
     }
 
-    const previousPath = this.profileStoragePath(previousPhotoUrl, user.uid);
-    if (!previousPath || previousPath === imagePath) {
+    if (!previousPhotoUrl || previousPhotoUrl === url || !previousPhotoUrl.includes('.blob.vercel-storage.com/')) {
       return { url, cleanupWarning: false };
     }
 
     try {
-      await deleteObject(ref(this.storage, previousPath));
+      await this.blobStorage.delete([previousPhotoUrl]);
       return { url, cleanupWarning: false };
     } catch (error) {
       console.error('La photo de profil a été mise à jour, mais l’ancienne image n’a pas pu être supprimée.', error);
@@ -114,20 +104,4 @@ export class AdminAuthService {
     });
   }
 
-  private profileStoragePath(photoUrl: string | null, uid: string): string | null {
-    if (!photoUrl) {
-      return null;
-    }
-
-    try {
-      const pathSegment = new URL(photoUrl).pathname.split('/o/')[1];
-      if (!pathSegment) {
-        return null;
-      }
-      const path = decodeURIComponent(pathSegment);
-      return path.startsWith(`admins/${uid}/profile/`) ? path : null;
-    } catch {
-      return null;
-    }
-  }
 }

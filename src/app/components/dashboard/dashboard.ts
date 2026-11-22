@@ -2,13 +2,12 @@ import { Component, computed, NgZone, OnDestroy, OnInit, signal } from '@angular
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import type { Subscription } from 'rxjs';
 import type { Unsubscribe } from 'firebase/firestore';
-import { deleteObject, getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
 import { AdminAuthService } from '../../firebase/admin-auth.service';
 import { CountryCatalogueService } from '../../firebase/country-catalogue.service';
 import { TextileCatalogueService } from '../../firebase/textile-catalogue.service';
 import { compressImage } from '../../utils/compress-image';
 import type { Country, CountryDraft } from '../../models/country';
-import { firebaseApp } from '../../firebase/firebase-app';
+import { BlobStorageService } from '../../firebase/blob-storage.service';
 import type { Textile, TextileDraft, TextileImage, TextileImagesDraft, TextileStatus } from '../../models/textile';
 
 const maxTextileImages = 5;
@@ -41,6 +40,7 @@ function isTextileStatus(value: string): value is TextileStatus {
 export class Dashboard implements OnInit, OnDestroy {
   constructor(
     private readonly auth: AdminAuthService,
+    private readonly blobStorage: BlobStorageService,
     private readonly countryCatalogue: CountryCatalogueService,
     private readonly catalogue: TextileCatalogueService,
     private readonly route: ActivatedRoute,
@@ -271,15 +271,17 @@ export class Dashboard implements OnInit, OnDestroy {
     this.isSavingCountry.set(true);
     try {
       const id = this.editingCountry()?.id;
+      const previousFlagUrl = this.editingCountry()?.flagUrl;
       let flagUrl = this.editingCountry()?.flagUrl ?? '';
       if (this.selectedCountryFlag) {
         const compressedFlag = await compressImage(this.selectedCountryFlag, 640);
-        const storage = getStorage(firebaseApp);
-        const imageRef = ref(storage, `countries/${id ?? crypto.randomUUID()}/flag-${Date.now()}`);
-        await uploadBytes(imageRef, compressedFlag, { contentType: compressedFlag.type });
-        flagUrl = await getDownloadURL(imageRef);
+        const uploaded = await this.blobStorage.upload(compressedFlag, `countries/${id ?? crypto.randomUUID()}/flag-${Date.now()}`);
+        flagUrl = uploaded.url;
       }
       await this.countryCatalogue.saveCountry({ name: draft.name.trim(), flag: draft.flag, flagUrl }, id);
+      if (previousFlagUrl?.includes('.blob.vercel-storage.com/') && previousFlagUrl !== flagUrl) {
+        await this.blobStorage.delete([previousFlagUrl]);
+      }
       this.notification.set(
         this.editingCountry() ? 'Pays modifié avec succès.' : 'Pays ajouté avec succès.',
       );
@@ -317,6 +319,9 @@ export class Dashboard implements OnInit, OnDestroy {
       const result = await this.catalogue.deleteTextilesByCountry(country.name);
       deletedTextileCount = result.deletedCount;
       await this.countryCatalogue.deleteCountry(country);
+      if (country.flagUrl?.includes('.blob.vercel-storage.com/')) {
+        await this.blobStorage.delete([country.flagUrl]);
+      }
       const textileMessage =
         deletedTextileCount > 0
           ? ` et ${deletedTextileCount} tissu${deletedTextileCount > 1 ? 's' : ''}`
@@ -486,7 +491,7 @@ export class Dashboard implements OnInit, OnDestroy {
           ? 'Choisis une image JPG, PNG ou WebP de 5 Mo maximum.'
           : error instanceof Error && error.message === 'IMAGE_PROCESSING_FAILED'
             ? 'La photo n’a pas pu être optimisée. Essaie avec une autre image.'
-          : 'La photo n’a pas pu être enregistrée. Vérifie que Firebase Storage est activé et réessaie.',
+          : 'La photo n’a pas pu être enregistrée. Vérifie la configuration Vercel Blob et réessaie.',
       );
     } finally {
       this.isUploadingProfilePhoto.set(false);
