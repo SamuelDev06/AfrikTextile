@@ -1,53 +1,39 @@
-import { handleUpload } from '@vercel/blob/client';
-import { cert, getApps, initializeApp } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
-import { getFirestore } from 'firebase-admin/firestore';
+import { put } from '@vercel/blob';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
+import { authError, requireAdmin } from '../_firebase-admin';
 
-function adminApp() {
-  if (getApps().length) return getApps()[0];
-  const projectId = process.env.FIREBASE_PROJECT_ID;
-  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n');
-  if (!projectId || !clientEmail || !privateKey) throw new Error('Firebase Admin environment variables are missing.');
-  return initializeApp({ credential: cert({ projectId, clientEmail, privateKey }) });
-}
+const maxImageSize = 5 * 1024 * 1024;
+const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
-type ApiRequest = Request & { body: unknown; headers: Headers };
-type ApiResponse = { status(code: number): ApiResponse; json(value: unknown): void };
-
-export default async function uploadHandler(request: ApiRequest, response: ApiResponse) {
+export default async function uploadHandler(request: VercelRequest, response: VercelResponse) {
   if (request.method !== 'POST') return response.status(405).json({ error: 'Method not allowed.' });
   try {
-    const authHeader = request.headers.authorization ?? '';
-    const token = authHeader.replace(/^Bearer\s+/i, '');
-    if (!token) return response.status(401).json({ error: 'Authentication required.' });
-    const app = adminApp();
-    const decoded = await getAuth(app).verifyIdToken(token);
-    const admin = await getFirestore(app).doc(`admins/${decoded.uid}`).get();
-    if (!admin.exists) return response.status(403).json({ error: 'Admin access required.' });
+    const uid = await requireAdmin(new Request('https://local.invalid', {
+      method: 'POST',
+      headers: { authorization: request.headers.authorization ?? '' },
+    }));
+    const { pathname, contentType, data } = request.body ?? {};
+    if (
+      typeof pathname !== 'string' ||
+      typeof contentType !== 'string' ||
+      !allowedTypes.has(contentType) ||
+      typeof data !== 'string'
+    ) return response.status(400).json({ error: 'Invalid image payload.' });
 
-    const result = await handleUpload({
-      body: request.body,
-      request,
-      onBeforeGenerateToken: async (pathname, clientPayload) => {
-        const bearer = clientPayload;
-        if (!bearer) throw new Error('UNAUTHORIZED');
-        const verified = await getAuth(app).verifyIdToken(bearer);
-        if (verified.uid !== decoded.uid) throw new Error('FORBIDDEN');
-        const allowedFolder = pathname.startsWith(`textiles/`) || pathname.startsWith('countries/') || pathname.startsWith(`admins/${decoded.uid}/profile/`);
-        if (!allowedFolder) throw new Error('FORBIDDEN');
-        return {
-          allowedContentTypes: ['image/jpeg', 'image/png', 'image/webp'],
-          maximumSizeInBytes: pathname.startsWith('countries/') ? 2 * 1024 * 1024 : 5 * 1024 * 1024,
-          addRandomSuffix: true,
-          tokenPayload: decoded.uid,
-        };
-      },
-      onUploadCompleted: async () => undefined,
-    });
-    return response.status(200).json(result);
+    const isAvatar = pathname.startsWith(`admins/${uid}/profile/`);
+    const validFolder = pathname.startsWith('textiles/') || pathname.startsWith('countries/') || isAvatar;
+    if (!validFolder) return response.status(403).json({ error: 'Invalid image destination.' });
+    const bytes = Buffer.from(data, 'base64');
+    const sizeLimit = pathname.startsWith('countries/') ? 2 * 1024 * 1024 : maxImageSize;
+    if (bytes.length === 0 || bytes.length > sizeLimit) {
+      return response.status(413).json({ error: 'Image exceeds the allowed size.' });
+    }
+    const blob = await put(pathname, bytes, { access: 'public', contentType, addRandomSuffix: true });
+    return response.status(200).json({ url: blob.url, pathname: blob.pathname });
   } catch (error) {
-    console.error('Blob upload authorization failed.', error);
-    return response.status(500).json({ error: 'Upload authorization failed.' });
+    const authResponse = authError(error);
+    if (authResponse) return response.status(authResponse.status).json(await authResponse.json());
+    console.error('Blob upload failed.', error);
+    return response.status(500).json({ error: 'Image upload failed.' });
   }
 }

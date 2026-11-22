@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { upload } from '@vercel/blob/client';
 import { getAuth } from 'firebase/auth';
 import { firebaseApp } from './firebase-app';
 
@@ -11,13 +10,18 @@ export class BlobStorageService {
     const user = this.auth.currentUser;
     if (!user) throw new Error('ADMIN_USER_NOT_FOUND');
     const token = await user.getIdToken();
-    const blob = await upload(pathname, file, {
-      access: 'public',
-      handleUploadUrl: '/api/blob/upload',
-      clientPayload: token,
-      contentType: file.type,
+    const bytes = new Uint8Array(await file.arrayBuffer());
+    let binary = '';
+    for (let offset = 0; offset < bytes.length; offset += 0x8000) {
+      binary += String.fromCharCode(...bytes.subarray(offset, offset + 0x8000));
+    }
+    const response = await fetch('/api/blob/upload', {
+      method: 'POST',
+      headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+      body: JSON.stringify({ pathname, contentType: file.type, data: btoa(binary) }),
     });
-    return { url: blob.url, pathname: blob.pathname };
+    if (!response.ok) throw new Error('BLOB_UPLOAD_FAILED');
+    return response.json() as Promise<{ url: string; pathname: string }>;
   }
 
   async delete(urls: string[]): Promise<void> {
