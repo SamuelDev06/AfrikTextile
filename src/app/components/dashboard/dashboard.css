@@ -87,10 +87,6 @@
 .dashboard__nav-link::before { background: var(--dashboard-gold); border-radius: 0 0.25rem 0.25rem 0; content: ''; inset: 0 auto 0 0; opacity: 0; position: absolute; transform: scaleY(0.4); transition: opacity 180ms ease, transform 180ms ease; width: 3px; }
 .dashboard__nav-link--active::before { opacity: 1; transform: scaleY(1); }
 
-.dashboard__nav-link--exit {
-  margin-top: 0;
-}
-
 .dashboard__nav-icon {
   fill: none;
   flex: 0 0 1.35rem;
@@ -106,38 +102,9 @@
   min-width: 0;
 }
 
-.dashboard__topbar { animation: soft-fade 350ms ease both; }
 .dashboard__content > * { animation: soft-entrance 420ms cubic-bezier(0.2, 0.75, 0.25, 1) both; }
 .dashboard__content > *:nth-child(2) { animation-delay: 45ms; }
 .dashboard__content > *:nth-child(3) { animation-delay: 90ms; }
-
-.dashboard__topbar {
-  align-items: center;
-  background: rgb(255 250 242 / 90%);
-  border-bottom: 1px solid var(--dashboard-border);
-  display: flex;
-  gap: 1rem;
-  justify-content: space-between;
-  min-height: 5.25rem;
-  padding: 0.85rem clamp(1.25rem, 3vw, 2.5rem);
-}
-
-.dashboard__heading {
-  flex: 1;
-}
-
-.dashboard__heading h1 {
-  font-family: var(--font-family-display);
-  font-size: 1.5rem;
-  line-height: 1.1;
-  margin: 0;
-}
-
-.dashboard__heading > p:last-child {
-  color: #77543d;
-  font-size: 0.85rem;
-  margin: 0.25rem 0 0;
-}
 
 .dashboard__page-heading {
   border-left: 4px solid var(--dashboard-orange);
@@ -332,7 +299,6 @@
 }
 
 .dashboard__quick-link > span:nth-child(2) {
-  min-width: 0;
   display: grid;
   gap: 0.2rem;
   min-width: 0;
@@ -491,7 +457,6 @@
   border-radius: 999px;
   color: white;
   display: inline-flex;
-  flex: 0 0 2.5rem;
   flex: 0 0 auto;
   font: inherit;
   font-size: 0.82rem;
@@ -750,32 +715,6 @@
   min-width: 5rem;
   object-fit: cover;
   width: 5rem;
-}
-
-.fabric-swatch--wax {
-  background:
-    repeating-linear-gradient(45deg, transparent 0 10px, #f5a20b 11px 15px, transparent 16px 21px),
-    repeating-linear-gradient(-45deg, #12457a 0 14px, #f3cf54 15px 19px, #b63a0e 20px 27px);
-}
-
-.fabric-swatch--bazin {
-  background:
-    radial-gradient(circle at 30% 35%, #f7c651 0 9%, transparent 9.5%),
-    radial-gradient(circle at 68% 63%, #e77820 0 12%, transparent 12.5%),
-    repeating-linear-gradient(35deg, #642112 0 12px, #d96f1c 13px 17px, #34170e 18px 25px);
-}
-
-.fabric-swatch--bogolan {
-  background:
-    repeating-linear-gradient(0deg, transparent 0 9px, #dca642 10px 13px, transparent 14px 19px),
-    repeating-linear-gradient(90deg, #172f36 0 12px, #f0e2b9 13px 17px, #315c66 18px 25px);
-}
-
-.fabric-swatch--kente {
-  background:
-    repeating-linear-gradient(90deg, #0d4583 0 8px, #efb61b 9px 14px, #a71917 15px 22px),
-    repeating-linear-gradient(0deg, transparent 0 12px, #f7d15c 13px 17px, transparent 18px 23px);
-  background-blend-mode: screen;
 }
 
 .status-badge {
