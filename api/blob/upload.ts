@@ -1,17 +1,11 @@
 import { put } from '@vercel/blob';
+import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { authError, requireAdmin } from '../_firebase-admin';
-
-type ApiRequest = {
-  method?: string;
-  headers: { authorization?: string | string[] };
-  body?: { pathname?: unknown; contentType?: unknown; data?: unknown };
-};
-type ApiResponse = { status(code: number): ApiResponse; json(value: unknown): void };
 
 const maxImageSize = 5 * 1024 * 1024;
 const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
-export default async function uploadHandler(request: ApiRequest, response: ApiResponse) {
+export default async function uploadHandler(request: VercelRequest, response: VercelResponse) {
   if (request.method !== 'POST') return response.status(405).json({ error: 'Method not allowed.' });
   try {
     const uid = await requireAdmin(new Request('https://local.invalid', {
@@ -44,6 +38,12 @@ export default async function uploadHandler(request: ApiRequest, response: ApiRe
     const authResponse = authError(error);
     if (authResponse) return response.status(authResponse.status).json(await authResponse.json());
     console.error('Blob upload failed.', error);
+    if (error instanceof Error && error.message === 'Firebase Admin environment variables are missing.') {
+      return response.status(500).json({
+        error: 'Firebase Admin configuration is missing.',
+        code: 'FIREBASE_ADMIN_CONFIG_MISSING',
+      });
+    }
     return response.status(500).json({ error: 'Image upload failed.' });
   }
 }

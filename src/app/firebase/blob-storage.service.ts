@@ -20,8 +20,16 @@ export class BlobStorageService {
       headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
       body: JSON.stringify({ pathname, contentType: file.type, data: btoa(binary) }),
     });
-    if (!response.ok) throw new Error('BLOB_UPLOAD_FAILED');
-    return response.json() as Promise<{ url: string; pathname: string }>;
+    const result = (await response.json().catch(() => null)) as
+      | { url?: unknown; pathname?: unknown; code?: unknown }
+      | null;
+    if (!response.ok) {
+      throw new Error(typeof result?.code === 'string' ? result.code : 'BLOB_UPLOAD_FAILED');
+    }
+    if (typeof result?.url !== 'string' || typeof result.pathname !== 'string') {
+      throw new Error('BLOB_UPLOAD_INVALID_RESPONSE');
+    }
+    return { url: result.url, pathname: result.pathname };
   }
 
   async delete(urls: string[]): Promise<void> {
