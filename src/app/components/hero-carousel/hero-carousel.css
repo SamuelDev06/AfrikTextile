@@ -16,7 +16,7 @@
 }
 
 .hero-carousel {
-  background: #482010;
+  background: transparent;
   border: 0;
   border-radius: 0;
   box-shadow: none;
@@ -67,7 +67,7 @@
 }
 
 .hero-carousel__slide::after {
-  background: linear-gradient(0deg, rgb(35 18 10 / 65%), transparent 48%);
+  background: linear-gradient(0deg, rgb(35 18 10 / 18%), transparent 24%);
   content: '';
   inset: 0;
   pointer-events: none;

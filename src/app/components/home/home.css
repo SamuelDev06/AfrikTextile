@@ -312,8 +312,8 @@ app-hero-carousel {
     justify-content: center;
     padding: 0.55rem;
     width: 2.75rem;
-    margin-left: 0;
-    order: -1;
+    margin-left: auto;
+    order: 1;
   }
 
   .menu-toggle:focus-visible {
@@ -398,9 +398,9 @@ app-hero-carousel {
     font-family: var(--font-family-site);
     font-size: 0.9rem;
     font-style: italic;
-    margin: 2rem auto 0;
+    margin: 1.25rem auto 0;
     max-width: 30rem;
-    padding: 1.5rem 0.5rem 0.25rem;
+    padding: 0.85rem 0.5rem 0.25rem;
     text-align: center;
   }
 
