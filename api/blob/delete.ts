@@ -1,7 +1,11 @@
 import { del } from '@vercel/blob';
 import { authError, requireAdmin } from '../_firebase-admin';
 
-type ApiRequest = Request & { body?: { urls?: unknown }; headers: Headers };
+type ApiRequest = {
+  method?: string;
+  headers: { authorization?: string | string[] };
+  body?: { urls?: unknown };
+};
 type ApiResponse = { status(code: number): ApiResponse; json(value: unknown): void };
 
 export default async function deleteHandler(request: ApiRequest, response: ApiResponse) {
@@ -9,7 +13,11 @@ export default async function deleteHandler(request: ApiRequest, response: ApiRe
   try {
     await requireAdmin(new Request('https://local.invalid', {
       method: 'POST',
-      headers: { authorization: request.headers.authorization ?? '' },
+      headers: {
+        authorization: Array.isArray(request.headers.authorization)
+          ? request.headers.authorization[0] ?? ''
+          : request.headers.authorization ?? '',
+      },
     }));
     const urls: unknown = request.body?.urls;
     if (!Array.isArray(urls) || urls.length > 25 || !urls.every((url) => typeof url === 'string' && url.startsWith('https://'))) {

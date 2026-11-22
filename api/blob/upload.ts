@@ -1,16 +1,26 @@
 import { put } from '@vercel/blob';
-import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { authError, requireAdmin } from '../_firebase-admin';
+
+type ApiRequest = {
+  method?: string;
+  headers: { authorization?: string | string[] };
+  body?: { pathname?: unknown; contentType?: unknown; data?: unknown };
+};
+type ApiResponse = { status(code: number): ApiResponse; json(value: unknown): void };
 
 const maxImageSize = 5 * 1024 * 1024;
 const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
-export default async function uploadHandler(request: VercelRequest, response: VercelResponse) {
+export default async function uploadHandler(request: ApiRequest, response: ApiResponse) {
   if (request.method !== 'POST') return response.status(405).json({ error: 'Method not allowed.' });
   try {
     const uid = await requireAdmin(new Request('https://local.invalid', {
       method: 'POST',
-      headers: { authorization: request.headers.authorization ?? '' },
+      headers: {
+        authorization: Array.isArray(request.headers.authorization)
+          ? request.headers.authorization[0] ?? ''
+          : request.headers.authorization ?? '',
+      },
     }));
     const { pathname, contentType, data } = request.body ?? {};
     if (
