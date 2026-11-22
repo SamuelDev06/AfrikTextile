@@ -1,14 +1,5 @@
 <div class="dashboard">
-  @if (sidebarOpen()) {
-    <button
-      class="dashboard__backdrop"
-      type="button"
-      aria-label="Fermer le menu"
-      (click)="closeSidebar()"
-    ></button>
-  }
-
-  <aside class="dashboard__sidebar" [class.dashboard__sidebar--open]="sidebarOpen()">
+  <aside class="dashboard__sidebar">
     <a class="dashboard__brand" routerLink="/admin" aria-label="Afrik Textile, tableau de bord">
       <span class="dashboard__brand-mark" aria-hidden="true">AT</span>
       <span>Afrik<br />Textile</span>
@@ -18,81 +9,80 @@
       <a
         class="dashboard__nav-link"
         [class.dashboard__nav-link--active]="activeSection() === 'overview'"
+        data-tooltip="Tableau de bord"
         routerLink="/admin"
         [attr.aria-current]="activeSection() === 'overview' ? 'page' : null"
       >
         <svg class="dashboard__nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z" /></svg>
-        Tableau de bord
+        <span class="dashboard__nav-label">Tableau de bord</span>
       </a>
       <a
         class="dashboard__nav-link"
         [class.dashboard__nav-link--active]="activeSection() === 'textiles'"
+        data-tooltip="Gestion des tissus"
         routerLink="/admin/textiles"
         [attr.aria-current]="activeSection() === 'textiles' ? 'page' : null"
-        (click)="closeSidebar()"
       >
         <svg class="dashboard__nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16l-2 13H6L4 7Z"/><path d="M8 7a4 4 0 0 1 8 0M9 11v5m6-5v5"/></svg>
-        Gestion des tissus
+        <span class="dashboard__nav-label">Gestion des tissus</span>
       </a>
       <a
         class="dashboard__nav-link"
         [class.dashboard__nav-link--active]="activeSection() === 'countries'"
+        data-tooltip="Gestion des pays"
         routerLink="/admin/countries"
         [attr.aria-current]="activeSection() === 'countries' ? 'page' : null"
-        (click)="closeSidebar()"
       >
         <svg class="dashboard__nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/></svg>
-        Gestion des pays
+        <span class="dashboard__nav-label">Gestion des pays</span>
+      </a>
+
+      <a class="dashboard__nav-link dashboard__nav-link--exit" data-tooltip="Retour à la vitrine" routerLink="/">
+        <svg class="dashboard__nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6m0-6-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg>
+        <span class="dashboard__nav-label">Retour à la vitrine</span>
       </a>
     </nav>
 
-    <a class="dashboard__nav-link dashboard__nav-link--exit" routerLink="/">
-      <svg class="dashboard__nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6m0-6-9 9"/><path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6"/></svg>
-      Retour à la vitrine
-    </a>
+    <div class="dashboard__account">
+      <input
+        #profilePhotoInput
+        class="visually-hidden"
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        [disabled]="isUploadingProfilePhoto()"
+        (change)="selectProfilePhoto($event)"
+      />
+      <button
+        class="dashboard__profile-button"
+        type="button"
+        aria-label="Modifier la photo de profil"
+        title="Modifier la photo de profil"
+        [disabled]="isUploadingProfilePhoto()"
+        (click)="profilePhotoInput.click()"
+      >
+        @if (profilePhotoUrl()) {
+          <img [src]="profilePhotoUrl()" alt="Photo de profil de l’administrateur" />
+        } @else {
+          <span aria-hidden="true">A</span>
+        }
+        <span class="dashboard__profile-edit" aria-hidden="true">✎</span>
+      </button>
+      <span class="dashboard__account-name">Admin</span>
+      <button class="dashboard__logout" type="button" aria-label="Se déconnecter" title="Se déconnecter" (click)="signOut()">
+        <svg class="dashboard__nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5m5 5H3"/><path d="M12 3h7a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-7"/></svg>
+        <span class="dashboard__nav-label">Se déconnecter</span>
+      </button>
+    </div>
   </aside>
 
   <div class="dashboard__workspace">
-    <header class="dashboard__topbar">
-      <div class="dashboard__heading">
+    <main class="dashboard__content">
+      <header class="dashboard__page-heading">
         <p class="dashboard__eyebrow">Afrik Textile / Administration</p>
         <h1>{{ pageTitle() }}</h1>
         <p>{{ pageDescription() }}</p>
-      </div>
-      <div class="dashboard__account">
-        <input
-          #profilePhotoInput
-          class="visually-hidden"
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          [disabled]="isUploadingProfilePhoto()"
-          (change)="selectProfilePhoto($event)"
-        />
-        <button
-          class="dashboard__profile-button"
-          type="button"
-          aria-label="Modifier la photo de profil"
-          title="Modifier la photo de profil"
-          [disabled]="isUploadingProfilePhoto()"
-          (click)="profilePhotoInput.click()"
-        >
-          @if (profilePhotoUrl()) {
-            <img [src]="profilePhotoUrl()" alt="Photo de profil de l’administrateur" />
-          } @else {
-            <span aria-hidden="true">A</span>
-          }
-          <span class="dashboard__profile-edit" aria-hidden="true">✎</span>
-        </button>
-        <span class="dashboard__account-name">Admin</span>
-        <button class="dashboard__logout" type="button" (click)="signOut()">
-          <span aria-hidden="true">↗</span>
-          Se déconnecter
-        </button>
-      </div>
-      <button class="dashboard__menu-toggle" type="button" aria-label="Ouvrir le menu" [attr.aria-expanded]="sidebarOpen()" (click)="sidebarOpen.set(!sidebarOpen())"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
-    </header>
+      </header>
 
-    <main class="dashboard__content">
       @if (notification()) {
         <p class="dashboard__notification" role="status">{{ notification() }}</p>
       }
@@ -144,7 +134,7 @@
           <span class="dashboard__quick-arrow" aria-hidden="true">→</span>
         </a>
         <a class="dashboard__quick-link" routerLink="/admin/countries">
-          <span class="dashboard-panel__icon" aria-hidden="true">◎</span>
+          <svg class="dashboard-panel__icon dashboard-panel__icon--svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0-18"/></svg>
           <span>
             <strong>Gestion des pays</strong>
             <small>Gérer les pays d’origine des tissus</small>
@@ -158,7 +148,7 @@
       <section class="dashboard-panel" id="pays" aria-labelledby="countries-title">
         <div class="dashboard-panel__heading">
           <div class="dashboard-panel__title">
-            <span class="dashboard-panel__icon" aria-hidden="true">◎</span>
+            <svg class="dashboard-panel__icon dashboard-panel__icon--svg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0-18"/></svg>
             <div>
               <h2 id="countries-title">Gestion des pays</h2>
               <p>Les pays d’origine présents dans le catalogue</p>
@@ -187,7 +177,7 @@
             @for (country of countryCounts(); track country.id) {
               <article class="country-card">
                 @if (country.flagUrl) {
-                  <img class="country-card__flag-image" [src]="country.flagUrl" [alt]="'Drapeau de ' + country.name" />
+                  <img class="country-card__flag-image" [src]="country.flagUrl" [alt]="'Drapeau de ' + country.name" loading="lazy" decoding="async" />
                 } @else {
                   <span class="country-card__flag" aria-hidden="true">{{ country.flag }}</span>
                 }
@@ -222,10 +212,22 @@
           </div>
           <div class="dashboard__filters">
             <label class="dashboard__search">
-              <span aria-hidden="true">⌕</span>
+              <svg
+                class="dashboard__search-icon"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <circle cx="10.8" cy="10.8" r="6.8" />
+                <path d="m16 16 4 4" />
+              </svg>
               <span class="visually-hidden">Rechercher un tissu</span>
               <input
-                type="search"
+                type="text"
                 placeholder="Rechercher un tissu..."
                 [value]="searchTerm()"
                 (input)="updateSearch($event)"
@@ -277,7 +279,7 @@
                 @for (textile of filteredTextiles(); track textile.id) {
                   <tr>
                     <td>
-                      <img class="fabric-swatch" [src]="textile.imageUrl" [alt]="'Photo de ' + textile.name" />
+                      <img class="fabric-swatch" [src]="textile.imageUrl" [alt]="'Photo de ' + textile.name" loading="lazy" decoding="async" />
                     </td>
                     <th scope="row">{{ textile.name }}</th>
                     <td>{{ textile.country }}</td>

@@ -15,6 +15,7 @@
       <app-country-pill
         name="Tous"
         description="Tous les pays"
+        [primary]="true"
         [active]="selectedCountry() === null"
         (selected)="countrySelected.emit(null)"
       ></app-country-pill>

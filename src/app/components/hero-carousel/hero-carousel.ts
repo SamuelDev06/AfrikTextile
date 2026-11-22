@@ -41,12 +41,16 @@ export class HeroCarousel implements OnInit, OnDestroy {
   ];
 
   protected readonly activeSlide = signal(0);
+  protected readonly previousSlide = signal<number | null>(null);
+  protected readonly enteringSlide = signal<number | null>(null);
   protected readonly autoplayAllowed =
     typeof window !== 'undefined' &&
     typeof window.matchMedia === 'function' &&
     !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   private intervalId: number | null = null;
+  private transitionTimeout: number | null = null;
+  private transitionFrame: number | null = null;
 
   constructor(
     private readonly zone: NgZone,
@@ -59,14 +63,44 @@ export class HeroCarousel implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.stopAutoplay();
+    if (this.transitionTimeout !== null) {
+      window.clearTimeout(this.transitionTimeout);
+    }
+    if (this.transitionFrame !== null) {
+      window.cancelAnimationFrame(this.transitionFrame);
+    }
   }
 
   private nextSlide(): void {
-    this.activeSlide.update((index) => (index + 1) % this.slides.length);
+    this.showSlide((this.activeSlide() + 1) % this.slides.length);
   }
 
   protected selectSlide(index: number): void {
+    this.showSlide(index);
+  }
+
+  private showSlide(index: number): void {
+    if (index === this.activeSlide()) return;
+
+    this.previousSlide.set(this.activeSlide());
     this.activeSlide.set(index);
+    this.enteringSlide.set(index);
+
+    if (this.transitionFrame !== null) {
+      window.cancelAnimationFrame(this.transitionFrame);
+    }
+    this.transitionFrame = window.requestAnimationFrame(() => {
+      this.enteringSlide.set(null);
+      this.transitionFrame = null;
+    });
+
+    if (this.transitionTimeout !== null) {
+      window.clearTimeout(this.transitionTimeout);
+    }
+    this.transitionTimeout = window.setTimeout(() => {
+      this.previousSlide.set(null);
+      this.transitionTimeout = null;
+    }, 800);
   }
 
   protected pauseAutoplay(): void {

@@ -95,7 +95,9 @@
 
 .hero {
   align-items: center;
-  background: #482010;
+  /* Image de secours derrière le carrousel : le fond marron ne peut plus
+     apparaître pendant le chargement ou les transitions des diapositives. */
+  background: #111 url('/img/hero1.jpg') center / cover no-repeat;
   color: #fffaf2;
   min-height: min(34rem, calc(100vh - 5rem));
   overflow: hidden;
@@ -110,9 +112,9 @@
 .hero::before {
   background: linear-gradient(
     110deg,
-    rgb(103 47 17 / 25%),
-    rgb(156 76 25 / 16%) 58%,
-    rgb(231 151 54 / 12%)
+    rgb(0 0 0 / 34%),
+    rgb(0 0 0 / 18%) 58%,
+    rgb(0 0 0 / 8%)
   );
   content: '';
   inset: 0;
@@ -301,8 +303,8 @@ app-hero-carousel {
   .menu-toggle {
     align-items: center;
     background: transparent;
-    border: 1px solid #e8d2b9;
-    border-radius: 0.55rem;
+    border: 0;
+    border-radius: 0;
     color: #682b0b;
     cursor: pointer;
     display: flex;
@@ -313,6 +315,7 @@ app-hero-carousel {
     padding: 0.55rem;
     width: 2.75rem;
     margin-left: auto;
+    order: 1;
   }
 
   .menu-toggle:focus-visible {
@@ -375,19 +378,23 @@ app-hero-carousel {
     align-items: stretch;
     flex-direction: column;
     gap: 0.35rem;
-    margin: 0 auto;
-    max-width: 30rem;
+    margin: 0 -1.25rem;
+    max-width: none;
+    width: calc(100% + 2.5rem);
   }
 
   .nav-list li {
     border-bottom: 1px solid #f0dfc9;
+    text-align: left;
+    width: 100%;
   }
 
   .nav-link {
     display: block;
     font-family: var(--font-family-display);
     font-size: 1.1rem;
-    padding: 0.95rem 0.75rem;
+    padding: 0.95rem 2rem;
+    text-align: left;
   }
 
   .site-navigation__slogan {
@@ -397,9 +404,13 @@ app-hero-carousel {
     font-family: var(--font-family-site);
     font-size: 0.9rem;
     font-style: italic;
-    margin: 2rem auto 0;
+    bottom: calc(0.5rem + env(safe-area-inset-bottom));
+    left: 1.25rem;
+    margin: 0;
     max-width: 30rem;
-    padding: 1.5rem 0.5rem 0.25rem;
+    padding: 0.85rem 0.5rem 0.25rem;
+    position: absolute;
+    right: 1.25rem;
     text-align: center;
   }
 

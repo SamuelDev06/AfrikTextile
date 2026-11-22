@@ -14,8 +14,9 @@ import {
   writeBatch,
 } from 'firebase/firestore';
 import type { DocumentData, Unsubscribe } from 'firebase/firestore';
-import { deleteObject, getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
 import type { Textile, TextileDraft, TextileImage, TextileImagesDraft, TextileStatus } from '../models/textile';
+import { compressImage } from '../utils/compress-image';
+import { BlobStorageService } from './blob-storage.service';
 import { firebaseApp } from './firebase-app';
 
 const allowedStatuses: TextileStatus[] = ['available', 'low-stock', 'out-of-stock'];
@@ -43,7 +44,7 @@ function isTextileImage(value: unknown): value is TextileImage {
 @Injectable({ providedIn: 'root' })
 export class TextileCatalogueService {
   private readonly firestore = getFirestore(firebaseApp);
-  private readonly storage = getStorage(firebaseApp);
+  constructor(private readonly blobStorage: BlobStorageService) {}
 
   watchTextiles(onChange: (textiles: Textile[]) => void, onError: (error: Error) => void): Unsubscribe {
     return onSnapshot(
@@ -144,7 +145,7 @@ export class TextileCatalogueService {
         continue;
       }
       try {
-        await deleteObject(ref(this.storage, previousImage.path));
+        if (previousImage.url.includes('.blob.vercel-storage.com/')) await this.blobStorage.delete([previousImage.url]);
       } catch (error) {
         console.error('Le tissu est enregistré, mais une ancienne image n’a pas pu être supprimée.', error);
         cleanupWarning = true;
@@ -163,7 +164,8 @@ export class TextileCatalogueService {
     }
     for (const imagePath of imagePaths) {
       try {
-        await deleteObject(ref(this.storage, imagePath));
+        const image = textile.images.find((item) => item.path === imagePath);
+        if (image?.url.includes('.blob.vercel-storage.com/')) await this.blobStorage.delete([image.url]);
       } catch (error) {
         console.error('Le tissu est supprimé, mais une image n’a pas pu être supprimée.', error);
         cleanupWarning = true;
@@ -190,7 +192,10 @@ export class TextileCatalogueService {
       const imagePaths = this.readImagePaths(textileDoc.data());
       for (const imagePath of imagePaths) {
         try {
-          await deleteObject(ref(this.storage, imagePath));
+          const data = textileDoc.data();
+          const images = Array.isArray(data['images']) ? data['images'] as TextileImage[] : [];
+          const image = images.find((item) => item.path === imagePath);
+          if (image?.url.includes('.blob.vercel-storage.com/')) await this.blobStorage.delete([image.url]);
         } catch (error) {
           console.error(`Le tissu ${textileDoc.id} est supprimé, mais une image n’a pas pu être supprimée.`, error);
           imageCleanupWarning = true;
@@ -274,18 +279,19 @@ export class TextileCatalogueService {
     index: number,
     uploadedPaths: Set<string>,
   ): Promise<TextileImage> {
-    const safeName = file.name.replace(/[^\w.-]/g, '_');
-    const imagePath = `textiles/${textileId}/${Date.now()}-${index}-${safeName}`;
-    const imageRef = ref(this.storage, imagePath);
-    await uploadBytes(imageRef, file, { contentType: file.type });
-    uploadedPaths.add(imagePath);
-    return { url: await getDownloadURL(imageRef), path: imagePath };
+    const compressedFile = await compressImage(file);
+    const safeName = compressedFile.name.replace(/[^\w.-]/g, '_');
+    const uploaded = await this.blobStorage.upload(compressedFile, `textiles/${textileId}/${Date.now()}-${index}-${safeName}`);
+    uploadedPaths.add(uploaded.url);
+    return { url: uploaded.url, path: uploaded.pathname };
   }
 
   private async cleanupUploadedImages(imagePaths: Set<string>): Promise<void> {
     for (const imagePath of imagePaths) {
       try {
-        await deleteObject(ref(this.storage, imagePath));
+        if (imagePath.startsWith('https://') && imagePath.includes('.blob.vercel-storage.com/')) {
+          await this.blobStorage.delete([imagePath]);
+        }
       } catch (error) {
         console.error('Impossible de nettoyer une image après l’échec de l’enregistrement.', error);
       }

@@ -9,15 +9,24 @@
   (focusout)="onFocusOut($event)"
 >
   @for (slide of slides; track slide.id; let index = $index) {
-    @if (activeSlide() === index) {
+    @if (activeSlide() === index || previousSlide() === index) {
       <div
         class="hero-carousel__slide"
+        [class.hero-carousel__slide--active]="activeSlide() === index && enteringSlide() !== index"
+        [class.hero-carousel__slide--entering]="enteringSlide() === index"
+        [class.hero-carousel__slide--leaving]="previousSlide() === index"
         role="group"
         aria-roledescription="diapositive"
         [attr.aria-label]="(index + 1) + ' sur ' + slides.length + ' : ' + slide.title"
       >
         @if (slide.image) {
-          <img class="hero-carousel__image" [src]="slide.image" [alt]="slide.description" />
+          <img
+            class="hero-carousel__image"
+            [src]="slide.image"
+            [alt]="slide.description"
+            [attr.fetchpriority]="index === 0 ? 'high' : 'auto'"
+            decoding="async"
+          />
         } @else {
           <div
             [class]="'hero-carousel__pattern hero-carousel__pattern--' + slide.pattern"
@@ -25,7 +34,6 @@
             [attr.aria-label]="slide.description"
           ></div>
         }
-        <p class="hero-carousel__caption">{{ slide.title }}</p>
       </div>
     }
   }
