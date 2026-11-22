@@ -19,6 +19,32 @@
   border-color: #e99410;
 }
 
+.country-pill--primary {
+  background: #f39808;
+  border-color: #f39808;
+  box-shadow: none;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 700;
+  gap: 0.55rem;
+  min-height: 2.5rem;
+  padding: 0.65rem 1rem;
+  transition: background-color 160ms ease, transform 160ms ease;
+}
+
+.country-pill__icon {
+  flex: 0 0 auto;
+  height: 1rem;
+  width: 1rem;
+}
+
+.country-pill--primary:hover,
+.country-pill--primary.country-pill--active {
+  background: #db7900;
+  border-color: #db7900;
+  transform: translateY(-2px);
+}
+
 .country-pill:focus-visible {
   outline: 3px solid #e99410;
   outline-offset: 3px;

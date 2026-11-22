@@ -9,9 +9,12 @@
   (focusout)="onFocusOut($event)"
 >
   @for (slide of slides; track slide.id; let index = $index) {
-    @if (activeSlide() === index) {
+    @if (activeSlide() === index || previousSlide() === index) {
       <div
         class="hero-carousel__slide"
+        [class.hero-carousel__slide--active]="activeSlide() === index && enteringSlide() !== index"
+        [class.hero-carousel__slide--entering]="enteringSlide() === index"
+        [class.hero-carousel__slide--leaving]="previousSlide() === index"
         role="group"
         aria-roledescription="diapositive"
         [attr.aria-label]="(index + 1) + ' sur ' + slides.length + ' : ' + slide.title"
