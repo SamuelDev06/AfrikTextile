@@ -875,16 +875,21 @@
 
 .textile-form__close {
   align-items: center;
+  aspect-ratio: 1;
   background: #fff3e1;
   border: 1px solid #e8d2b9;
+  box-sizing: border-box;
   border-radius: 50%;
   color: #55220d;
   cursor: pointer;
   display: inline-flex;
+  flex: 0 0 2.5rem;
   font-size: 1.4rem;
-  height: 2.25rem;
+  height: 2.5rem;
   justify-content: center;
-  width: 2.25rem;
+  line-height: 1;
+  padding: 0;
+  width: 2.5rem;
 }
 
 .textile-form__cover-preview {

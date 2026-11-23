@@ -472,15 +472,20 @@
 
 .textile-dialog__close {
   align-items: center;
+  aspect-ratio: 1;
   background: #fffaf2;
   border: 1px solid #e8d2b9;
+  box-sizing: border-box;
   border-radius: 50%;
   color: #55220d;
   cursor: pointer;
   display: flex;
+  flex: 0 0 2.5rem;
   font-size: 1.5rem;
   height: 2.5rem;
   justify-content: center;
+  line-height: 1;
+  padding: 0;
   position: absolute;
   right: 1rem;
   top: 1rem;
