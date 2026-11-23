@@ -8,6 +8,7 @@ import { Component, input, output } from '@angular/core';
 export class CountryPill {
   readonly name = input.required<string>();
   readonly description = input.required<string>();
+  readonly flagUrl = input<string | null>(null);
   readonly active = input(false);
   readonly primary = input(false);
   readonly selected = output<string>();

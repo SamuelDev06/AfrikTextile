@@ -56,7 +56,8 @@ export class CountryCatalogueService {
   async saveCountry(draft: CountryDraft, id?: string): Promise<void> {
     const name = draft.name.trim();
     const flag = draft.flag.trim();
-    if (!name || !flag) {
+    const flagUrl = draft.flagUrl?.trim() ?? '';
+    if (!name || (!flag && !flagUrl)) {
       throw new Error('COUNTRY_FIELDS_REQUIRED');
     }
 
@@ -69,7 +70,7 @@ export class CountryCatalogueService {
       throw new Error('COUNTRY_ALREADY_EXISTS');
     }
 
-    const countryData = { name, flag, ...(draft.flagUrl ? { flagUrl: draft.flagUrl } : {}), updatedAt: serverTimestamp() };
+    const countryData = { name, flag, ...(flagUrl ? { flagUrl } : {}), updatedAt: serverTimestamp() };
     if (id) {
       const countryRef = doc(this.firestore, 'countries', id);
       const existing = await getDoc(countryRef);
@@ -120,10 +121,16 @@ export class CountryCatalogueService {
 
   private parseCountry(id: string, data: DocumentData): Country {
     const { name, flag, flagUrl } = data;
-    if (typeof name !== 'string' || typeof flag !== 'string' || !name.trim() || !flag.trim()) {
+    const parsedFlagUrl = typeof flagUrl === 'string' ? flagUrl.trim() : '';
+    if (
+      typeof name !== 'string' ||
+      typeof flag !== 'string' ||
+      !name.trim() ||
+      (!flag.trim() && !parsedFlagUrl)
+    ) {
       throw new Error(`Données invalides pour le pays ${id}.`);
     }
 
-    return { id, name, flag, ...(typeof flagUrl === 'string' ? { flagUrl } : {}) };
+    return { id, name, flag, ...(parsedFlagUrl ? { flagUrl: parsedFlagUrl } : {}) };
   }
 }

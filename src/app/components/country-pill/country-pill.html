@@ -11,6 +11,8 @@
       <circle cx="12" cy="12" r="9" />
       <path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18" />
     </svg>
+  } @else if (flagUrl()) {
+    <img class="country-pill__flag-image" [src]="flagUrl()!" [alt]="'Drapeau de ' + name()" />
   } @else {
     <span class="country-pill__placeholder">{{ description() }}</span>
   }

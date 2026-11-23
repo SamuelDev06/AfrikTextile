@@ -294,6 +294,10 @@ export class Dashboard implements OnInit, OnDestroy {
         this.countryFormError.set('Le nom ne peut pas être modifié tant que des tissus utilisent ce pays.');
       } else if (error instanceof Error && error.message === 'IMAGE_PROCESSING_FAILED') {
         this.countryFormError.set('Le drapeau n’a pas pu être optimisé. Essaie avec une autre image.');
+      } else if (error instanceof Error && error.message.startsWith('BLOB_')) {
+        this.countryFormError.set('Le drapeau n’a pas pu être envoyé au stockage. Réessaie après le prochain déploiement.');
+      } else if (error instanceof Error && error.message === 'COUNTRY_FIELDS_REQUIRED') {
+        this.countryFormError.set('Renseigne le nom du pays et ajoute son drapeau.');
       } else {
         this.countryFormError.set('Enregistrement impossible. Vérifie les règles Firestore et réessaie.');
       }

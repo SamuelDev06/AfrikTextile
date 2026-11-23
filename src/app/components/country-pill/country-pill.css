@@ -58,6 +58,13 @@
   padding: 0.25rem 0.5rem;
 }
 
+.country-pill__flag-image {
+  border-radius: 50%;
+  height: 1.55rem;
+  object-fit: cover;
+  width: 1.55rem;
+}
+
 .country-pill__name {
   font-size: 0.9rem;
   font-weight: 600;

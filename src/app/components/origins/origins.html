@@ -25,6 +25,7 @@
         <app-country-pill
           [name]="country.name"
           [description]="country.flag"
+          [flagUrl]="country.flagUrl ?? null"
           [active]="selectedCountry() === country.name"
           (selected)="countrySelected.emit($event)"
         ></app-country-pill>
