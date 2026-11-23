@@ -1,6 +1,6 @@
 import { put } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { authError, requireAdmin } from '../_firebase-admin';
+import { authError, requireAdmin } from '../_firebase-admin.js';
 
 const maxImageSize = 5 * 1024 * 1024;
 const allowedTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);

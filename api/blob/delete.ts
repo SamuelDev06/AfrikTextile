@@ -1,6 +1,6 @@
 import { del } from '@vercel/blob';
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { authError, requireAdmin } from '../_firebase-admin';
+import { authError, requireAdmin } from '../_firebase-admin.js';
 
 export default async function deleteHandler(request: VercelRequest, response: VercelResponse) {
   if (request.method !== 'POST') return response.status(405).json({ error: 'Method not allowed.' });
