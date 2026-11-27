@@ -35,11 +35,14 @@
             <div class="textile-card__image">
               <img
                 class="textile-card__photo"
-                [src]="textile.imageUrl"
+                [src]="imageUrlFor(textile.imageUrl)"
+                [attr.srcset]="imageSrcSetFor(textile.imageUrl)"
+                sizes="(max-width: 383px) calc(100vw - 8rem), (max-width: 520px) 16rem, 17rem"
                 [alt]="'Photo de ' + textile.name"
                 [attr.loading]="$first ? 'eager' : 'lazy'"
                 [attr.fetchpriority]="$first ? 'high' : 'auto'"
                 decoding="async"
+                (error)="restoreOriginalImage($event, textile.imageUrl)"
               />
               <span class="textile-card__country">À découvrir</span>
               <span class="textile-card__status textile-card__status--{{ textile.status }}">
@@ -206,11 +209,14 @@
           <div class="textile-card__image">
             <img
               class="textile-card__photo"
-              [src]="textile.imageUrl"
+              [src]="imageUrlFor(textile.imageUrl)"
+              [attr.srcset]="imageSrcSetFor(textile.imageUrl)"
+              sizes="(max-width: 383px) calc(100vw - 8rem), (max-width: 520px) 16rem, 17rem"
               [alt]="'Photo de ' + textile.name"
               [attr.loading]="$first ? 'eager' : 'lazy'"
               [attr.fetchpriority]="$first ? 'high' : 'auto'"
               decoding="async"
+              (error)="restoreOriginalImage($event, textile.imageUrl)"
             />
             <span class="textile-card__country">{{ textile.country }}</span>
             <span class="textile-card__status textile-card__status--{{ textile.status }}">
@@ -328,10 +334,13 @@
         </button>
         <img
           class="textile-dialog__image"
-          [src]="detailImages()[activeDetailImageIndex()].url"
+          [src]="imageUrlFor(detailImages()[activeDetailImageIndex()].url, 1080)"
+          [attr.srcset]="imageSrcSetFor(detailImages()[activeDetailImageIndex()].url)"
+          sizes="(max-width: 520px) 90vw, 54rem"
           [alt]="'Photo ' + (activeDetailImageIndex() + 1) + ' de ' + textile.name"
           loading="lazy"
           decoding="async"
+          (error)="restoreOriginalImage($event, detailImages()[activeDetailImageIndex()].url)"
         />
         @if (detailImages().length > 1) {
           <div class="textile-dialog__thumbnails" role="group" aria-label="Autres photos du tissu">
@@ -344,7 +353,15 @@
                 [attr.aria-current]="activeDetailImageIndex() === index ? 'true' : null"
                 (click)="selectDetailImage(index)"
               >
-                <img [src]="image.url" [alt]="''" loading="lazy" decoding="async" />
+                <img
+                  [src]="imageUrlFor(image.url, 256)"
+                  [attr.srcset]="imageSrcSetFor(image.url)"
+                  sizes="4.5rem"
+                  [alt]="''"
+                  loading="lazy"
+                  decoding="async"
+                  (error)="restoreOriginalImage($event, image.url)"
+                />
               </button>
             }
           </div>

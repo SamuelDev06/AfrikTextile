@@ -1,5 +1,18 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist/AfrikTextile/browser",
+  "images": {
+    "sizes": [128, 256, 384, 512, 640, 768, 1080],
+    "remotePatterns": [
+      {
+        "protocol": "https",
+        "hostname": "^[a-z0-9-]+\\.public\\.blob\\.vercel-storage\\.com$",
+        "pathname": "^/(textiles|countries)/.*$"
+      }
+    ],
+    "minimumCacheTTL": 2592000,
+    "qualities": [70],
+    "formats": ["image/avif", "image/webp"]
+  },
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }]
 }

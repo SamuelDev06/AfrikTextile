@@ -17,6 +17,7 @@ import { TextileAnalyticsService } from './textile-analytics.service';
 import { TextileCatalogueService } from '../../firebase/textile-catalogue.service';
 import type { Country } from '../../models/country';
 import type { Textile, TextileStatus } from '../../models/textile';
+import { vercelImageSrcSet, vercelImageUrl } from '../../utils/vercel-image';
 
 @Component({
   selector: 'app-catalogue',
@@ -155,6 +156,22 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
       return 'Stock faible';
     }
     return status === 'out-of-stock' ? 'Rupture de stock' : 'Disponible';
+  }
+
+  protected imageUrlFor(url: string, width = 640): string {
+    return vercelImageUrl(url, width);
+  }
+
+  protected imageSrcSetFor(url: string): string | null {
+    return vercelImageSrcSet(url);
+  }
+
+  protected restoreOriginalImage(event: Event, originalUrl: string): void {
+    const image = event.currentTarget;
+    if (image instanceof HTMLImageElement && image.src.includes('/_vercel/image?')) {
+      image.removeAttribute('srcset');
+      image.src = originalUrl;
+    }
   }
 
   protected whatsappLinkFor(textile: Textile): string {
