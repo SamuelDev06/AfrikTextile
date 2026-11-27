@@ -41,7 +41,7 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
   protected readonly countries = signal<Country[]>([]);
   protected readonly isLoading = signal(true);
   protected readonly dataError = signal('');
-  protected readonly whatsappLink = 'https://wa.me/message/JKPDVMPZFGWSO1';
+  private readonly whatsappNumber = '233533550249';
   protected readonly featuredTextiles = computed(() =>
     this.textiles().filter((textile) => textile.featured),
   );
@@ -157,18 +157,62 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
     return status === 'out-of-stock' ? 'Rupture de stock' : 'Disponible';
   }
 
-  protected async openWhatsapp(event: MouseEvent, textile: Textile): Promise<void> {
-    const href = (event.currentTarget as HTMLAnchorElement).href;
-    const opensNewTab = event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
+  protected whatsappLinkFor(textile: Textile): string {
+    return `https://wa.me/${this.whatsappNumber}?text=${encodeURIComponent(this.whatsappMessage(textile))}`;
+  }
 
-    if (event.button !== 0 || opensNewTab) {
-      void this.recordWhatsappClick(textile);
-      return;
-    }
+  protected openWhatsapp(event: MouseEvent, textile: Textile): void {
+    const href = this.whatsappLinkFor(textile);
+    const opensNewTab = event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
+    void this.recordWhatsappClick(textile);
+
+    if (event.button !== 0 || opensNewTab) return;
 
     event.preventDefault();
-    await this.recordWhatsappClick(textile);
-    window.location.assign(href);
+    void this.shareTextile(textile, href);
+  }
+
+  private async shareTextile(textile: Textile, fallbackHref: string): Promise<void> {
+    const imageUrls = this.textileImageUrls(textile);
+    if (imageUrls.length && navigator.share && navigator.canShare) {
+      try {
+        const files = await Promise.all(
+          imageUrls.map(async (url, index) => {
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('TEXTILE_IMAGE_UNAVAILABLE');
+            const blob = await response.blob();
+            const extension = blob.type.split('/')[1]?.split(';')[0] || 'jpg';
+            return new File([blob], `tissu-${index + 1}.${extension}`, { type: blob.type || 'image/jpeg' });
+          }),
+        );
+        if (navigator.canShare({ files })) {
+          await navigator.share({
+            files,
+            title: textile.name,
+            text: this.whatsappMessage(textile),
+          });
+          return;
+        }
+      } catch (error) {
+        if (error instanceof DOMException && error.name === 'AbortError') return;
+      }
+    }
+
+    window.location.assign(fallbackHref);
+  }
+
+  private textileImageUrls(textile: Textile): string[] {
+    const urls = textile.images.map((image) => image.url).filter(Boolean);
+    if (!urls.length && textile.imageUrl) urls.push(textile.imageUrl);
+    return [...new Set(urls)];
+  }
+
+  private whatsappMessage(textile: Textile): string {
+    return [
+      `Bonjour, je souhaite discuter du tissu « ${textile.name} ».`,
+      `Pays : ${textile.country}.`,
+      `Prix : ${textile.price} FCFA${textile.priceUsd ? ` (${textile.priceUsd} $)` : ''}.`,
+    ].join('\n');
   }
 
   private async recordWhatsappClick(textile: Textile): Promise<void> {
