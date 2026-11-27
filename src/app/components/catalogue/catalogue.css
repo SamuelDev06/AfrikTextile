@@ -262,6 +262,8 @@
 
 .textile-card {
   animation: rise-in 550ms ease-out both;
+  display: flex;
+  flex-direction: column;
   background: #fffaf2;
   border: 1px solid #f0dfc9;
   box-shadow: 0 3px 10px rgb(72 32 16 / 8%);
@@ -344,6 +346,9 @@
 }
 
 .textile-card__content {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   padding: 0.85rem 1rem 1rem;
 }
 
@@ -369,7 +374,8 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-top: 0.9rem;
+  margin-top: auto;
+  padding-top: 0.9rem;
 }
 
 .textile-card__whatsapp,
@@ -640,6 +646,15 @@
     flex-basis: min(16rem, calc(100vw - 3.5rem));
   }
 
+  .catalogue__grid {
+    align-items: stretch;
+  }
+
+  .textile-card {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
   .textile-card__image {
     height: 9.5rem;
     padding: 0.6rem;
@@ -673,10 +688,15 @@
     overflow-wrap: anywhere;
   }
 
-  .selection-card__actions,
-  .textile-card__actions {
+  .selection-card__actions {
     gap: 0.4rem;
     margin-top: 0.7rem;
+  }
+
+  .textile-card__actions {
+    gap: 0.4rem;
+    margin-top: auto;
+    padding-top: 0.7rem;
   }
 }
 
