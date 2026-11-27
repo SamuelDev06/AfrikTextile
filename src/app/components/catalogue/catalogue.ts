@@ -178,50 +178,8 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
     return `https://wa.me/${this.whatsappNumber}?text=${encodeURIComponent(this.whatsappMessage(textile))}`;
   }
 
-  protected openWhatsapp(event: MouseEvent, textile: Textile): void {
-    const href = this.whatsappLinkFor(textile);
-    const opensNewTab = event.metaKey || event.ctrlKey || event.shiftKey || event.altKey;
+  protected openWhatsapp(textile: Textile): void {
     void this.recordWhatsappClick(textile);
-
-    if (event.button !== 0 || opensNewTab) return;
-
-    event.preventDefault();
-    void this.shareTextile(textile, href);
-  }
-
-  private async shareTextile(textile: Textile, fallbackHref: string): Promise<void> {
-    const imageUrls = this.textileImageUrls(textile);
-    if (imageUrls.length && navigator.share && navigator.canShare) {
-      try {
-        const files = await Promise.all(
-          imageUrls.map(async (url, index) => {
-            const response = await fetch(url);
-            if (!response.ok) throw new Error('TEXTILE_IMAGE_UNAVAILABLE');
-            const blob = await response.blob();
-            const extension = blob.type.split('/')[1]?.split(';')[0] || 'jpg';
-            return new File([blob], `tissu-${index + 1}.${extension}`, { type: blob.type || 'image/jpeg' });
-          }),
-        );
-        if (navigator.canShare({ files })) {
-          await navigator.share({
-            files,
-            title: textile.name,
-            text: this.whatsappMessage(textile),
-          });
-          return;
-        }
-      } catch (error) {
-        if (error instanceof DOMException && error.name === 'AbortError') return;
-      }
-    }
-
-    window.location.assign(fallbackHref);
-  }
-
-  private textileImageUrls(textile: Textile): string[] {
-    const urls = textile.images.map((image) => image.url).filter(Boolean);
-    if (!urls.length && textile.imageUrl) urls.push(textile.imageUrl);
-    return [...new Set(urls)];
   }
 
   private whatsappMessage(textile: Textile): string {
