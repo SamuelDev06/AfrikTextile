@@ -41,7 +41,7 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
   protected readonly countries = signal<Country[]>([]);
   protected readonly isLoading = signal(true);
   protected readonly dataError = signal('');
-  private readonly whatsappNumber = '233533550249';
+  private readonly whatsappNumber = '233530948986';
   protected readonly featuredTextiles = computed(() =>
     this.textiles().filter((textile) => textile.featured),
   );
@@ -209,7 +209,7 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
 
   private whatsappMessage(textile: Textile): string {
     return [
-      `Bonjour, je souhaite discuter du tissu « ${textile.name} ».`,
+      `Bonjour, le tissu « ${textile.name} » m’intéresse et je souhaiterais en discuter avec vous.`,
       `Pays : ${textile.country}.`,
       `Prix : ${textile.price} FCFA${textile.priceUsd ? ` (${textile.priceUsd} $)` : ''}.`,
     ].join('\n');
