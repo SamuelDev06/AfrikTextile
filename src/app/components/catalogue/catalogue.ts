@@ -19,6 +19,13 @@ import type { Country } from '../../models/country';
 import type { Textile, TextileStatus } from '../../models/textile';
 import { vercelImageSrcSet, vercelImageUrl } from '../../utils/vercel-image';
 
+function carouselCardsForWidth(width: number): number {
+  if (width < 680) return 1;
+  if (width < 1040) return 2;
+  if (width < 1400) return 3;
+  return 4;
+}
+
 @Component({
   selector: 'app-catalogue',
   templateUrl: './catalogue.html',
@@ -42,7 +49,16 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
   protected readonly countries = signal<Country[]>([]);
   protected readonly isLoading = signal(true);
   protected readonly dataError = signal('');
+  protected readonly visibleCarouselCards = signal(
+    typeof window === 'undefined' ? 1 : carouselCardsForWidth(window.innerWidth),
+  );
   private readonly whatsappNumber = '233530948986';
+  private readonly handleWindowResize = (): void => {
+    const visibleCards = carouselCardsForWidth(window.innerWidth);
+    if (visibleCards !== this.visibleCarouselCards()) {
+      this.visibleCarouselCards.set(visibleCards);
+    }
+  };
   protected readonly featuredTextiles = computed(() =>
     this.textiles().filter((textile) => textile.featured),
   );
@@ -72,6 +88,7 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
   });
 
   ngOnInit(): void {
+    window.addEventListener('resize', this.handleWindowResize, { passive: true });
     this.unsubscribeCountries = this.countryCatalogue.watchCountries(
       (countries) =>
         this.zone.run(() => {
@@ -100,6 +117,7 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    window.removeEventListener('resize', this.handleWindowResize);
     this.stopAutoplay();
     this.unsubscribeTextiles?.();
     this.unsubscribeCountries?.();

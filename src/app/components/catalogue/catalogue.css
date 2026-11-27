@@ -27,6 +27,7 @@
   align-items: stretch;
   display: flex;
   gap: 1rem;
+  margin-inline: auto;
   min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
@@ -34,16 +35,23 @@
   scroll-behavior: smooth;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
+  width: min(17rem, 100%);
 }
 
 .selection__carousel,
 .catalogue__carousel {
+  margin-inline: calc(-1 * clamp(1.7rem, 5vw, 4rem));
   position: relative;
 }
 
 .selection__grid::-webkit-scrollbar,
 .catalogue__grid::-webkit-scrollbar {
   display: none;
+}
+
+.selection__grid--centered,
+.catalogue__grid--centered {
+  justify-content: center;
 }
 
 .selection-card {
@@ -152,11 +160,11 @@
 }
 
 .catalogue__carousel-button--previous {
-  left: -3rem;
+  left: max(0px, calc(50% - 38.75rem));
 }
 
 .catalogue__carousel-button--next {
-  right: -3rem;
+  right: max(0px, calc(50% - 38.75rem));
 }
 
 .catalogue__carousel-button:hover:not(:disabled) {
@@ -270,6 +278,7 @@
 .catalogue__grid {
   display: flex;
   gap: 1rem;
+  margin-inline: auto;
   min-width: 0;
   overflow-x: auto;
   overflow-y: hidden;
@@ -277,6 +286,7 @@
   scroll-behavior: smooth;
   scroll-snap-type: x mandatory;
   scrollbar-width: none;
+  width: min(17rem, 100%);
 }
 
 .catalogue__grid--single {
@@ -669,11 +679,6 @@
     flex-basis: min(16rem, calc(100vw - 8rem));
   }
 
-  .selection__carousel,
-  .catalogue__carousel {
-    margin-inline: calc(-1 * clamp(1.7rem, 5vw, 4rem));
-  }
-
   .selection__grid {
     margin-inline: auto;
     overflow-x: hidden;
@@ -751,6 +756,65 @@
     gap: 0.4rem;
     margin-top: auto;
     padding-top: 0.7rem;
+  }
+}
+
+@media (min-width: 521px) and (max-width: 679px) {
+  .selection-card,
+  .textile-card {
+    flex-basis: min(16rem, calc(100vw - 8rem));
+  }
+
+  .selection__grid,
+  .catalogue__grid {
+    width: min(16rem, calc(100vw - 8rem));
+  }
+
+  .selection__carousel .catalogue__carousel-button--previous,
+  .catalogue__carousel .catalogue__carousel-button--previous {
+    left: max(0px, calc(50% - 11.25rem));
+  }
+
+  .selection__carousel .catalogue__carousel-button--next,
+  .catalogue__carousel .catalogue__carousel-button--next {
+    right: max(0px, calc(50% - 11.25rem));
+  }
+}
+
+@media (min-width: 680px) {
+  .selection__grid,
+  .catalogue__grid {
+    width: 35rem;
+  }
+
+  .catalogue__carousel-button--previous {
+    left: max(0px, calc(50% - 20.75rem));
+  }
+
+  .catalogue__carousel-button--next {
+    right: max(0px, calc(50% - 20.75rem));
+  }
+}
+
+@media (min-width: 1040px) {
+  .selection__grid,
+  .catalogue__grid {
+    width: 53rem;
+  }
+
+  .catalogue__carousel-button--previous {
+    left: max(0px, calc(50% - 29.75rem));
+  }
+
+  .catalogue__carousel-button--next {
+    right: max(0px, calc(50% - 29.75rem));
+  }
+}
+
+@media (min-width: 1400px) {
+  .selection__grid,
+  .catalogue__grid {
+    width: 71rem;
   }
 }
 

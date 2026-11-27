@@ -5,7 +5,7 @@
   </div>
 
   <div class="selection__carousel">
-    @if (featuredTextiles().length > 1) {
+    @if (featuredTextiles().length > visibleCarouselCards()) {
     <button
       class="catalogue__carousel-button catalogue__carousel-button--previous"
       type="button"
@@ -21,6 +21,7 @@
     <div
       #selectionTrack
       class="selection__grid"
+      [class.selection__grid--centered]="featuredTextiles().length <= visibleCarouselCards()"
       role="region"
       aria-label="Sélection du moment"
       tabindex="0"
@@ -102,7 +103,7 @@
         }
       }
     </div>
-    @if (featuredTextiles().length > 1) {
+    @if (featuredTextiles().length > visibleCarouselCards()) {
     <button
       class="catalogue__carousel-button catalogue__carousel-button--next"
       type="button"
@@ -182,7 +183,7 @@
     (focusin)="pauseAutoplay()"
     (focusout)="onCarouselFocusOut($event, catalogueCarousel)"
   >
-    @if (filteredTextiles().length > 1) {
+    @if (filteredTextiles().length > visibleCarouselCards()) {
       <button
         class="catalogue__carousel-button catalogue__carousel-button--previous"
         type="button"
@@ -199,6 +200,7 @@
       #catalogueTrack
       class="catalogue__grid"
       [class.catalogue__grid--single]="filteredTextiles().length === 1"
+      [class.catalogue__grid--centered]="filteredTextiles().length <= visibleCarouselCards()"
       role="region"
       aria-label="Tissus du catalogue"
       aria-live="polite"
@@ -300,7 +302,7 @@
         </div>
       }
     </div>
-    @if (filteredTextiles().length > 1) {
+    @if (filteredTextiles().length > visibleCarouselCards()) {
       <button
         class="catalogue__carousel-button catalogue__carousel-button--next"
         type="button"
