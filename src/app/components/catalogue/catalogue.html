@@ -33,7 +33,14 @@
         @for (textile of featuredTextiles(); track textile.id) {
           <article class="selection-card">
             <div class="textile-card__image">
-              <img class="textile-card__photo" [src]="textile.imageUrl" [alt]="'Photo de ' + textile.name" loading="lazy" decoding="async" />
+              <img
+                class="textile-card__photo"
+                [src]="textile.imageUrl"
+                [alt]="'Photo de ' + textile.name"
+                [attr.loading]="$first ? 'eager' : 'lazy'"
+                [attr.fetchpriority]="$first ? 'high' : 'auto'"
+                decoding="async"
+              />
               <span class="textile-card__country">À découvrir</span>
               <span class="textile-card__status textile-card__status--{{ textile.status }}">
                 {{ statusLabel(textile.status) }}
@@ -197,7 +204,14 @@
       @for (textile of filteredTextiles(); track textile.name) {
         <article class="textile-card">
           <div class="textile-card__image">
-            <img class="textile-card__photo" [src]="textile.imageUrl" [alt]="'Photo de ' + textile.name" loading="lazy" decoding="async" />
+            <img
+              class="textile-card__photo"
+              [src]="textile.imageUrl"
+              [alt]="'Photo de ' + textile.name"
+              [attr.loading]="$first ? 'eager' : 'lazy'"
+              [attr.fetchpriority]="$first ? 'high' : 'auto'"
+              decoding="async"
+            />
             <span class="textile-card__country">{{ textile.country }}</span>
             <span class="textile-card__status textile-card__status--{{ textile.status }}">
               {{ statusLabel(textile.status) }}

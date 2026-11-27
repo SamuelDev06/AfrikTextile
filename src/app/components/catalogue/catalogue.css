@@ -24,6 +24,7 @@
 }
 
 .selection__grid {
+  align-items: stretch;
   display: flex;
   gap: 1rem;
   min-width: 0;
@@ -50,7 +51,10 @@
   background: #fffaf2;
   border: 1px solid #f0dfc9;
   box-shadow: 0 3px 10px rgb(72 32 16 / 8%);
+  display: flex;
+  flex-direction: column;
   flex: 0 0 min(17rem, 100%);
+  height: 25rem;
   max-width: 17rem;
   min-width: 0;
   overflow: hidden;
@@ -70,6 +74,9 @@
 }
 
 .selection-card__content {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
   padding: 0.85rem 1rem 1rem;
 }
 
@@ -77,12 +84,23 @@
   color: #55220d;
   font-size: 1rem;
   margin: 0 0 0.25rem;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
 .selection-card__content p {
   color: #71300e;
   font-size: 0.88rem;
   margin: 0;
+}
+
+.selection-card__content p:not(.selection-card__price) {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  overflow: hidden;
 }
 
 .selection-card__content .selection-card__price {
@@ -94,7 +112,35 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin-top: 0.9rem;
+  margin-top: auto;
+  padding-top: 0.9rem;
+}
+
+.selection__carousel .catalogue__carousel-button {
+  background: #fffaf2;
+  border: 1px solid #e7cba7;
+  box-shadow: 0 3px 10px rgb(72 32 16 / 16%);
+  bottom: 0.4rem;
+  height: 3rem;
+  left: 0;
+  right: auto;
+  top: auto;
+  transform: none;
+  width: 3rem;
+}
+
+.selection__carousel .catalogue__carousel-button:hover:not(:disabled) {
+  background: #ffe4b2;
+  transform: scale(1.05);
+}
+
+.selection__carousel {
+  padding-bottom: 5rem;
+}
+
+.selection__carousel .catalogue__carousel-button--next {
+  left: auto;
+  right: 0;
 }
 
 .catalogue {
@@ -644,6 +690,20 @@
   .selection-card,
   .textile-card {
     flex-basis: min(16rem, calc(100vw - 3.5rem));
+  }
+
+  .selection__grid {
+    margin-inline: auto;
+    overflow-x: hidden;
+    width: min(16rem, calc(100vw - 3.5rem));
+  }
+
+  .selection__carousel .catalogue__carousel-button--previous {
+    left: 0;
+  }
+
+  .selection__carousel .catalogue__carousel-button--next {
+    right: 0;
   }
 
   .catalogue__grid {
