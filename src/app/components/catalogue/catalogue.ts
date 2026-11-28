@@ -52,7 +52,7 @@ export class Catalogue implements OnInit, AfterViewInit, OnDestroy {
   protected readonly visibleCarouselCards = signal(
     typeof window === 'undefined' ? 1 : carouselCardsForWidth(window.innerWidth),
   );
-  private readonly whatsappNumber = '233530948986';
+  private readonly whatsappNumber = '233533550249';
   private readonly handleWindowResize = (): void => {
     const visibleCards = carouselCardsForWidth(window.innerWidth);
     if (visibleCards !== this.visibleCarouselCards()) {
